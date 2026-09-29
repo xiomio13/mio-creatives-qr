@@ -1,0 +1,50 @@
+/* src/components/layout/Footer/Footer.module.css */
+.footer {
+  width: 100%;
+  padding: 3.5rem 1.5rem 2rem 1.5rem;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
+  box-sizing: border-box;
+}
+
+.copy {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: #64748B;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.copy strong {
+  color: #475569;
+  font-weight: 600;
+}
+
+.links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.link {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  color: #64748B;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.link:hover {
+  color: #FF5500;
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

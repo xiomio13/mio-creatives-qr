@@ -1,0 +1,247 @@
+/* src/components/qr/QRControls/QRControls.module.css */
+.controlsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #0F172A);
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.95rem;
+  color: var(--color-text-primary, #0F172A);
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--color-border, #E2E8F0);
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: #FF5500;
+  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.15);
+}
+
+/* Fila de Color */
+.colorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #F8FAFC;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.presetGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.colorChip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.colorChip:hover {
+  transform: scale(1.12);
+}
+
+.activeChip {
+  border-color: #FFFFFF;
+  box-shadow: 0 0 0 2.5px #FF5500;
+  transform: scale(1.08);
+}
+
+.colorPickerWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pickerText {
+  font-size: 0.8rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.colorInput {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.colorInput::-webkit-color-swatch {
+  border: 1.5px solid var(--color-border, #CBD5E1);
+  border-radius: 8px;
+}
+
+.hexCode {
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Grupos segmentados */
+.segmentedGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.3rem;
+  background-color: #F8FAFC;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.segmentButton {
+  flex: 1;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 180ms ease;
+  user-select: none;
+}
+
+.segmentButton:hover:not(.activeSegment) {
+  color: #0F172A;
+  background-color: rgba(226, 232, 240, 0.6);
+}
+
+.activeSegment {
+  background-color: #FF5500 !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.25);
+}
+
+/* Checkbox */
+.checkboxContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: #FF5500;
+  cursor: pointer;
+}
+
+.helperText {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.775rem;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Botón principal */
+.downloadButton {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
+  color: #FFFFFF !important;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.975rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 85, 0, 0.22);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+  box-sizing: border-box;
+}
+
+.downloadButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+  filter: brightness(1.05);
+}
+
+.downloadButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.downloadButton:focus-visible {
+  outline: 2px solid #FF5500;
+  outline-offset: 3px;
+}
+
+.downloadButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.2);
+}

@@ -1,0 +1,31 @@
+/* src/styles/tokens.css */
+:root {
+  /* Tipografía */
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Identidad cromática Mio Creatives */
+  --color-accent: #FF5500;
+  --color-accent-hover: #E04B00;
+  --color-accent-gradient: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
+
+  /* Superficies y Neutros */
+  --color-bg: #FAFAFC;
+  --color-surface: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-danger: #EF4444;
+
+  /* Ergonomía y Accesibilidad (WCAG / Ley de Fitts) */
+  --target-min-size: 48px;
+  --focus-ring: 2px solid #FF5500;
+  --focus-offset: 2px;
+  --transition-fast: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+  }
+}

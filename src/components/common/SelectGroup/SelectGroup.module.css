@@ -1,0 +1,64 @@
+/* src/components/common/SelectGroup/SelectGroup.module.css */
+.groupContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.optionsWrapper {
+  display: flex;
+  background-color: #F8FAFC;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.3rem;
+  gap: 0.35rem;
+  box-sizing: border-box;
+}
+
+.optionButton {
+  flex: 1;
+  min-height: 40px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.5rem;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.optionButton:hover:not(.active) {
+  background-color: #FFFFFF;
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.optionButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Estado activo: Naranja de marca sólido */
+.active {
+  background-color: #FF5500 !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 85, 0, 0.25);
+  border-color: transparent !important;
+}

@@ -1,0 +1,19 @@
+/* src/components/common/Logo/Logo.module.css */
+.logoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  transition: transform var(--transition-fast);
+  filter: drop-shadow(0 4px 12px rgba(255, 85, 0, 0.25));
+}
+
+.logoWrapper:hover .icon {
+  transform: scale(1.08) rotate(-2deg);
+}
