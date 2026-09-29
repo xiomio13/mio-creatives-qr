@@ -1,7 +1,7 @@
 // src/components/layout/Header.jsx
-import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import styles from './Header.module.css';
+import React from "react";
+import { useLanguage } from "../../context/LanguageContext";
+import styles from "./Header.module.css";
 
 export const Header = () => {
   const { t } = useLanguage();
@@ -12,20 +12,20 @@ export const Header = () => {
         <img
           src="/logo.svg"
           alt="Mio Creatives Logo"
-          width="36"
-          height="36"
+          width="64"
+          height="64"
           className={styles.logo}
         />
 
         <h1 className={styles.title}>
-          {t?.brandTitle || 'Mio Creatives'}{' '}
-          <span className={styles.badge}>{t?.brandBadge || 'QR'}</span>
+          {t?.brandTitle || "Mio Creatives"}{" "}
+          <span className={styles.badge}>{t?.brandBadge || "QR"}</span>
         </h1>
       </div>
 
       <p className={styles.subtitle}>
         {t?.subtitle ||
-          'Generador estático y permanente. Sin enlaces intermediarios, sin suscripciones trampa y sin caducidad.'}
+          "Generador estático y permanente. Sin enlaces intermediarios, sin suscripciones trampa y sin caducidad."}
       </p>
     </header>
   );

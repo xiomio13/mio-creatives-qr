@@ -15,12 +15,12 @@
 .logo {
   display: block;
   object-fit: contain;
-  width: 36px;
-  height: 36px;
+  width: 64px;
+  height: 64px;
 }
 
 .title {
-  font-family: var(--font-heading, "Outfit", sans-serif);
+  font-family: var(--font-heading);
   font-size: 1.9rem;
   font-weight: 700;
   color: var(--color-text-primary, #0F172A);
@@ -33,7 +33,7 @@
 }
 
 .subtitle {
-  font-family: var(--font-body, "Inter", sans-serif);
+  font-family: var(--font-body);
   font-size: 0.95rem;
   color: var(--color-text-secondary, #64748B);
   max-width: 560px;

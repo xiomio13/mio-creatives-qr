@@ -1,12 +1,24 @@
 /* src/components/layout/Footer.module.css */
 .footerContainer {
   text-align: center;
-  padding: 2rem 1rem 3rem;
+  padding: 2.25rem 1rem 3rem;
   width: 100%;
+  max-width: 900px; /* Mantiene la línea contenida y proporcional a la tarjeta */
+  margin: 3rem auto 0;
   font-family: var(--font-body, "Inter", sans-serif);
   font-size: 0.85rem;
   color: var(--color-text-secondary, #64748B);
   box-sizing: border-box;
+
+  /* Línea divisoria sutil con degradado desvanecido hacia los extremos */
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(
+    to right,
+    rgba(226, 232, 240, 0),
+    rgba(226, 232, 240, 0.9) 25%,
+    rgba(226, 232, 240, 0.9) 75%,
+    rgba(226, 232, 240, 0)
+  ) 1;
 }
 
 .copyText {

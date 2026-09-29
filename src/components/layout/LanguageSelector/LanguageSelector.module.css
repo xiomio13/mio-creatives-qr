@@ -1,57 +1,58 @@
 /* src/components/layout/LanguageSelector/LanguageSelector.module.css */
-.selectorWrapper {
+.selectorContainer {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
+  padding: 1.25rem 2rem 0;
   width: 100%;
-  margin-bottom: 1rem;
+  box-sizing: border-box;
 }
 
-.selectContainer {
+.selectWrapper {
+  display: inline-block;
   position: relative;
-  display: inline-flex;
-  align-items: center;
 }
 
-.select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-  min-height: 40px;
-  padding: 0.4rem 2.25rem 0.4rem 0.85rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: var(--font-body);
+.languageSelect {
+  /* Regla estricta: Fuente 2 (Inter) para todo el UI */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-size: 0.875rem;
   font-weight: 500;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  color: #0F172A;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  height: 38px;
+  line-height: 38px;
+  padding: 0 2rem 0 0.85rem;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+
+  /* Reseteo agresivo de flechas nativas */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Flecha integrada directamente como fondo para evitar deformaciones */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 11px;
+
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.select:hover {
+.languageSelect::-ms-expand {
+  display: none;
+}
+
+.languageSelect:hover {
   border-color: #CBD5E1;
 }
 
-.select:focus-visible {
-  outline: none;
-  border-color: var(--color-accent);
+.languageSelect:focus-visible {
+  border-color: #FF5500;
   box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.15);
-}
-
-/* Icono SVG de flecha personalizada integrada y centrada */
-.arrowIcon {
-  position: absolute;
-  right: 0.75rem;
-  width: 1rem;
-  height: 1rem;
-  color: var(--color-text-secondary);
-  pointer-events: none;
-  transition: transform var(--transition-fast);
-}
-
-.selectContainer:focus-within .arrowIcon {
-  color: var(--color-accent);
 }
