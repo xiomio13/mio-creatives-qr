@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/layout/Header';
 import { LanguageSelector } from './components/layout/LanguageSelector/LanguageSelector';
@@ -13,18 +13,24 @@ export default function App() {
   const [url, setUrl] = useState('');
   const [resolution, setResolution] = useState(500);
   const [format, setFormat] = useState('png');
-  const [color, setColor] = useState('#000000'); // Negro por defecto
+  const [color, setColor] = useState('#000000');
   const [isTransparent, setIsTransparent] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const previewRef = useRef(null);
+  // Almacenamos el marcado SVG generado en memoria (cero consultas al DOM)
+  const qrSvgMarkupRef = useRef('');
+
+  const handleQRReady = useCallback((svgString) => {
+    qrSvgMarkupRef.current = svgString || '';
+  }, []);
+
   const isValidUrl = Boolean(url && url.trim().length > 0);
 
   const handleDownload = async () => {
     if (!isValidUrl || isDownloading) return;
 
-    const svgElement = previewRef.current?.querySelector('svg');
-    if (!svgElement) {
+    const svgMarkup = qrSvgMarkupRef.current;
+    if (!svgMarkup) {
       alert('Aún no se ha generado ningún código QR para descargar.');
       return;
     }
@@ -32,7 +38,7 @@ export default function App() {
     try {
       setIsDownloading(true);
       await exportQRCode({
-        svgElement,
+        svgMarkup,
         size: Number(resolution),
         format,
         transparentBg: format === 'jpg' ? false : isTransparent,
@@ -57,17 +63,18 @@ export default function App() {
           <Header />
 
           <div className="generatorCard">
-            {/* Columna Izquierda: Previsualización + Barra de Color Abajo */}
-            <section className="previewColumn" ref={previewRef}>
+            {/* Columna Izquierda: Vista previa y barra de color */}
+            <section className="previewColumn">
               <QRPreview
                 value={url}
                 color={color}
                 onColorChange={setColor}
                 isTransparent={format === 'jpg' ? false : isTransparent}
+                onReady={handleQRReady}
               />
             </section>
 
-            {/* Columna Derecha: Parámetros y Descarga */}
+            {/* Columna Derecha: Parámetros y descarga */}
             <section className="controlsColumn">
               <QRControls
                 url={url}

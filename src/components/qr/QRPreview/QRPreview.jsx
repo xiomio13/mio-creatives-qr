@@ -1,53 +1,55 @@
 // src/components/qr/QRPreview/QRPreview.jsx
-import React, { useState, useEffect } from "react";
-import QRCode from "qrcode";
-import { useLanguage } from "../../../context/LanguageContext";
-import styles from "./QRPreview.module.css";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import QRCode from 'qrcode';
+import { useLanguage } from '../../../context/LanguageContext';
+import { QRColorBar } from '../QRColorBar/QRColorBar';
+import styles from './QRPreview.module.css';
 
 export const QRPreview = ({
   value,
-  color = "#000000",
+  color = '#000000',
   onColorChange,
   isTransparent = false,
+  onReady,
 }) => {
   const { t } = useLanguage();
-  const [svgString, setSvgString] = useState("");
+  const [svgString, setSvgString] = useState('');
   const hasValue = Boolean(value && value.trim().length > 0);
-
-  const defaultColors = [
-    { label: t.colors.black, value: "#000000" },
-    { label: t.colors.white, value: "#FFFFFF" },
-    { label: t.colors.gray, value: "#64748B" },
-  ];
 
   useEffect(() => {
     let active = true;
 
     if (!hasValue) {
-      setSvgString("");
+      setSvgString('');
+      if (onReady) onReady(null);
       return;
     }
 
     QRCode.toString(value.trim(), {
-      type: "svg",
-      errorCorrectionLevel: "H",
+      type: 'svg',
+      errorCorrectionLevel: 'H',
       margin: 1,
       color: {
         dark: color,
-        light: isTransparent ? "#00000000" : "#FFFFFF",
+        light: isTransparent ? '#00000000' : '#FFFFFF',
       },
     })
       .then((svg) => {
-        if (active) setSvgString(svg);
+        if (active) {
+          setSvgString(svg);
+          if (onReady) onReady(svg);
+        }
       })
       .catch((err) => {
-        console.error("Error generando QR:", err);
+        console.error('Error generando QR:', err);
+        if (onReady) onReady(null);
       });
 
     return () => {
       active = false;
     };
-  }, [value, color, isTransparent, hasValue]);
+  }, [value, color, isTransparent, hasValue, onReady]);
 
   return (
     <div className={styles.previewContainer}>
@@ -56,11 +58,8 @@ export const QRPreview = ({
           <div
             className={styles.qrWrapper}
             style={{
-              backgroundColor: isTransparent ? "transparent" : "#FFFFFF",
-              border:
-                color.toUpperCase() === "#FFFFFF"
-                  ? "1px solid #CBD5E1"
-                  : undefined,
+              backgroundColor: isTransparent ? 'transparent' : '#FFFFFF',
+              border: color.toUpperCase() === '#FFFFFF' ? '1.5px solid #CBD5E1' : undefined,
             }}
             dangerouslySetInnerHTML={{ __html: svgString }}
           />
@@ -71,42 +70,15 @@ export const QRPreview = ({
         )}
       </div>
 
-      {/* Barra de Color */}
-      <div className={styles.colorBarContainer}>
-        <div className={styles.presetGroup}>
-          {defaultColors.map((c) => {
-            const isSelected = color.toLowerCase() === c.value.toLowerCase();
-            return (
-              <button
-                key={c.value}
-                type="button"
-                className={`${styles.colorChip} ${isSelected ? styles.activeChip : ""}`}
-                style={{
-                  backgroundColor: c.value,
-                  border:
-                    c.value === "#FFFFFF"
-                      ? "1.5px solid #CBD5E1"
-                      : "1.5px solid transparent",
-                }}
-                onClick={() => onColorChange(c.value)}
-                title={c.label}
-                aria-label={`${t.colorLabel}: ${c.label}`}
-              />
-            );
-          })}
-        </div>
-
-        <label className={styles.pickerWrapper} title={t.customColor}>
-          <input
-            type="color"
-            className={styles.colorPickerInput}
-            value={color}
-            onChange={(e) => onColorChange(e.target.value)}
-            aria-label={t.customColor}
-          />
-          <span className={styles.hexCode}>{color.toUpperCase()}</span>
-        </label>
-      </div>
+      <QRColorBar color={color} onChange={onColorChange} />
     </div>
   );
+};
+
+QRPreview.propTypes = {
+  value: PropTypes.string,
+  color: PropTypes.string,
+  onColorChange: PropTypes.func.isRequired,
+  isTransparent: PropTypes.bool,
+  onReady: PropTypes.func,
 };

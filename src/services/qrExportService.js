@@ -1,109 +1,61 @@
 // src/services/qrExportService.js
-import { QR_FORMATS } from "../constants/qrConfig";
 
 /**
- * Fuerza la descarga en el navegador de un archivo a partir de un Blob o URL.
- * @param {string} url
- * @param {string} filename
+ * Convierte un marcado SVG en una imagen y descarga el archivo en el formato y resolución especificados.
+ *
+ * @param {Object} options
+ * @param {string} options.svgMarkup - Cadena de texto que contiene el SVG generado.
+ * @param {number} options.size - Ancho y alto de exportación en píxeles.
+ * @param {'png'|'jpg'|'svg'} options.format - Formato de salida.
+ * @param {boolean} options.transparentBg - Si debe preservar fondo transparente (ignorado en JPG).
+ * @param {string} options.filename - Nombre base del archivo sin extensión.
+ * @returns {Promise<void>}
  */
-const triggerDownload = (url, filename) => {
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 150);
-};
-
-/**
- * Exporta y descarga un código QR a partir de su elemento SVG renderizado en el DOM.
- * @param {Object} params
- * @param {SVGElement} params.svgElement Nodo SVG del QR generado.
- * @param {number} params.size Resolución cuadrada en px (200, 500, 1000, 1500, 2000).
- * @param {'png' | 'jpg' | 'svg'} params.format Formato de descarga.
- * @param {boolean} params.transparentBg Si el fondo debe ser transparente.
- * @param {string} [params.filename] Nombre base del archivo resultante.
- */
-export const exportQRCode = async ({
-  svgElement,
-  size,
-  format,
-  transparentBg,
+export async function exportQRCode({
+  svgMarkup,
+  size = 500,
+  format = "png",
+  transparentBg = false,
   filename = "mio-creatives-qr",
-}) => {
-  if (!svgElement) {
-    throw new Error(
-      "No se encontró el elemento SVG del código QR para exportar.",
-    );
+}) {
+  if (!svgMarkup || typeof svgMarkup !== "string") {
+    throw new Error("exportQRCode requiere una cadena SVG válida.");
   }
 
-  const outputName = `${filename}-${size}x${size}.${format}`;
+  const cleanFormat = format.toLowerCase();
 
-  // 1. Descarga vectorial directa (SVG)
-  if (format === QR_FORMATS.SVG) {
-    const serializer = new XMLSerializer();
-    let svgString = serializer.serializeToString(svgElement);
+  // Caso 1: Descarga directa de archivo vectorial SVG
+  if (cleanFormat === "svg") {
+    const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
+    triggerDownload(blob, `${filename}.svg`);
+    return;
+  }
 
-    if (transparentBg) {
-      svgString = svgString.replace(
-        /<rect[^>]*fill="#?[a-fA-F0-9]+"[^>]*>/i,
-        "",
-      );
-    }
-
-    const svgBlob = new Blob([svgString], {
+  // Caso 2: Rasterización a Canvas para PNG o JPG
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const svgBlob = new Blob([svgMarkup], {
       type: "image/svg+xml;charset=utf-8",
     });
-    triggerDownload(URL.createObjectURL(svgBlob), outputName);
-    return outputName;
-  }
+    const url = URL.createObjectURL(svgBlob);
 
-  // 2. Descarga rasterizada (PNG / JPG) vía Canvas off-screen
-  return new Promise((resolve, reject) => {
-    try {
-      const isJpg = format === QR_FORMATS.JPG;
-      const serializer = new XMLSerializer();
-      let svgString = serializer.serializeToString(svgElement);
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
 
-      // Si es JPG o no se solicitó transparencia, aseguramos un fondo blanco explícito en el SVG
-      if (isJpg || !transparentBg) {
-        if (
-          !svgString.includes('<rect width="100%" height="100%" fill="#FFFFFF"')
-        ) {
-          svgString = svgString.replace(
-            /(<svg[^>]*>)/i,
-            '$1<rect width="100%" height="100%" fill="#FFFFFF"/>',
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          reject(
+            new Error("No se pudo inicializar el contexto 2D del Canvas."),
           );
+          return;
         }
-      } else {
-        // Si es transparente, eliminamos cualquier fondo blanco que traiga el SVG por defecto
-        svgString = svgString.replace(
-          /<rect[^>]*fill="#?[a-fA-F0-9]+"[^>]*>/i,
-          "",
-        );
-      }
 
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        throw new Error(
-          "No fue posible inicializar el contexto 2D del Canvas.",
-        );
-      }
-
-      const svgBlob = new Blob([svgString], {
-        type: "image/svg+xml;charset=utf-8",
-      });
-      const blobUrl = URL.createObjectURL(svgBlob);
-      const img = new Image();
-
-      img.onload = () => {
-        // En JPG siempre rellenamos el fondo sólido del Canvas en blanco antes del trazo
-        if (isJpg || !transparentBg) {
+        // Manejo de fondo: JPG siempre blanco, PNG según transparentBg
+        if (cleanFormat === "jpg" || !transparentBg) {
           ctx.fillStyle = "#FFFFFF";
           ctx.fillRect(0, 0, size, size);
         } else {
@@ -111,33 +63,54 @@ export const exportQRCode = async ({
         }
 
         ctx.drawImage(img, 0, 0, size, size);
-        URL.revokeObjectURL(blobUrl);
+        URL.revokeObjectURL(url);
 
-        const mimeType = isJpg ? "image/jpeg" : "image/png";
-        const quality = isJpg ? 0.95 : 1.0;
+        const mimeType = cleanFormat === "jpg" ? "image/jpeg" : "image/png";
+        const fileExtension = cleanFormat === "jpg" ? "jpg" : "png";
+        const quality = cleanFormat === "jpg" ? 0.95 : 1.0;
 
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error("Error generando el archivo de imagen."));
+              reject(
+                new Error("Error al procesar el archivo gráfico en Canvas."),
+              );
               return;
             }
-            triggerDownload(URL.createObjectURL(blob), outputName);
-            resolve(outputName);
+            triggerDownload(blob, `${filename}.${fileExtension}`);
+            resolve();
           },
           mimeType,
           quality,
         );
-      };
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
 
-      img.onerror = () => {
-        URL.revokeObjectURL(blobUrl);
-        reject(new Error("Fallo al procesar el vector SVG en memoria."));
-      };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Error al cargar el recurso vectorial SVG en memoria."));
+    };
 
-      img.src = blobUrl;
-    } catch (err) {
-      reject(err);
-    }
+    img.src = url;
   });
-};
+}
+
+/**
+ * Dispara la descarga mediante un enlace temporal en memoria sin alterar el árbol React.
+ *
+ * @param {Blob} blob
+ * @param {string} downloadName
+ */
+function triggerDownload(blob, downloadName) {
+  const downloadUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = downloadUrl;
+  anchor.download = downloadName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(downloadUrl);
+}
