@@ -1,10 +1,12 @@
 // src/components/qr/QRControls/QRControls.jsx
-import React from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
-import styles from './QRControls.module.css';
+import React, { useMemo } from "react";
+import PropTypes from "prop-types";
+import { useLanguage } from "../../../context/LanguageContext";
+import { analyzeContent } from "../../../utils/urlValidator";
+import styles from "./QRControls.module.css";
 
-const RESOLUTIONS = [200, 500, 1000, 1500, 2000];
-const FORMATS = ['png', 'jpg', 'svg'];
+const RESOLUTION_OPTIONS = [200, 500, 1000, 1500, 2000];
+const FORMAT_OPTIONS = ["png", "jpg", "svg"];
 
 export const QRControls = ({
   url,
@@ -21,36 +23,72 @@ export const QRControls = ({
 }) => {
   const { t } = useLanguage();
 
+  // Análisis semántico reactivo en memoria
+  const contentInfo = useMemo(() => analyzeContent(url), [url]);
+
   return (
     <div className={styles.controlsContainer}>
-      {/* 1. Input de Enlace */}
-      <div className={styles.group}>
-        <label htmlFor="qr-input-url" className={styles.label}>
-          {t.urlLabel}
-        </label>
+      {/* Campo de texto con badge semántico */}
+      <div className={styles.controlGroup}>
+        <div className={styles.urlLabelRow}>
+          <label htmlFor="qr-input-url" className={styles.label}>
+            {t?.urlLabel || "Enlace web o texto"}
+          </label>
+          {url.trim().length > 0 && (
+            <span className={styles.typeBadge} aria-hidden="true">
+              <span>{contentInfo.icon}</span>
+              <span>{contentInfo.label}</span>
+            </span>
+          )}
+        </div>
+
         <input
           id="qr-input-url"
           type="text"
-          className={styles.input}
-          placeholder={t.urlPlaceholder}
+          className={styles.textInput}
+          placeholder={
+            t?.urlPlaceholder || "https://ejemplo.com o tu mensaje..."
+          }
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
+          aria-describedby={contentInfo.hint ? "url-semantic-hint" : undefined}
           autoComplete="off"
           spellCheck="false"
         />
+
+        {/* Sugerencia no intrusiva */}
+        {contentInfo.hint && (
+          <div
+            id="url-semantic-hint"
+            className={styles.semanticHint}
+            role="status"
+            aria-live="polite"
+          >
+            <span>💡</span>
+            <span>{contentInfo.hint}</span>
+          </div>
+        )}
       </div>
 
-      {/* 2. Selector de Resolución */}
-      <div className={styles.group}>
-        <span className={styles.label}>{t.resolutionLabel}</span>
-        <div className={styles.segmentedGroup}>
-          {RESOLUTIONS.map((res) => {
-            const isActive = Number(resolution) === res;
+      {/* Selector de Resolución */}
+      <div className={styles.controlGroup}>
+        <label className={styles.label}>
+          {t?.resolutionLabel || "Resolución de Descarga"}
+        </label>
+        <div
+          className={styles.segmentedControl}
+          role="radiogroup"
+          aria-label="Resolución de descarga"
+        >
+          {RESOLUTION_OPTIONS.map((res) => {
+            const isSelected = Number(resolution) === res;
             return (
               <button
                 key={res}
                 type="button"
-                className={`${styles.segmentButton} ${isActive ? styles.activeSegment : ''}`}
+                role="radio"
+                aria-checked={isSelected}
+                className={`${styles.segmentedButton} ${isSelected ? styles.active : ""}`}
                 onClick={() => onResolutionChange(res)}
               >
                 {res}px
@@ -60,17 +98,25 @@ export const QRControls = ({
         </div>
       </div>
 
-      {/* 3. Selector de Formato */}
-      <div className={styles.group}>
-        <span className={styles.label}>{t.formatLabel}</span>
-        <div className={styles.segmentedGroup}>
-          {FORMATS.map((fmt) => {
-            const isActive = format.toLowerCase() === fmt;
+      {/* Selector de Formato */}
+      <div className={styles.controlGroup}>
+        <label className={styles.label}>
+          {t?.formatLabel || "Formato de Archivo"}
+        </label>
+        <div
+          className={styles.segmentedControl}
+          role="radiogroup"
+          aria-label="Formato de exportación"
+        >
+          {FORMAT_OPTIONS.map((fmt) => {
+            const isSelected = format === fmt;
             return (
               <button
                 key={fmt}
                 type="button"
-                className={`${styles.segmentButton} ${isActive ? styles.activeSegment : ''}`}
+                role="radio"
+                aria-checked={isSelected}
+                className={`${styles.segmentedButton} ${isSelected ? styles.active : ""}`}
                 onClick={() => onFormatChange(fmt)}
               >
                 {fmt.toUpperCase()}
@@ -80,34 +126,57 @@ export const QRControls = ({
         </div>
       </div>
 
-      {/* 4. Checkbox Fondo Transparente */}
-      <div className={styles.checkboxContainer}>
+      {/* Toggle de Transparencia */}
+      <div className={styles.controlGroup}>
         <label className={styles.checkboxLabel}>
-          <span>{t.transparentLabel}</span>
           <input
             type="checkbox"
-            className={styles.checkbox}
-            checked={isTransparent && format !== 'jpg'}
-            disabled={format === 'jpg'}
+            className={styles.checkboxInput}
+            checked={format === "jpg" ? false : isTransparent}
+            disabled={format === "jpg"}
             onChange={(e) => onTransparentChange(e.target.checked)}
           />
+          <span>{t?.transparentLabel || "Fondo transparente"}</span>
         </label>
-        {format === 'jpg' && (
-          <p className={styles.helperText}>{t.jpgWarning}</p>
+
+        {format === "jpg" && (
+          <p className={styles.warningNote}>
+            {t?.jpgWarning ||
+              "El formato JPG no soporta transparencia y se genera siempre con fondo blanco."}
+          </p>
         )}
       </div>
 
-      {/* 5. Botón de Descarga */}
+      {/* Botón Principal de Descarga */}
       <button
         type="button"
         className={styles.downloadButton}
-        onClick={onDownload}
         disabled={!isValidUrl || isDownloading}
+        onClick={onDownload}
       >
-        {isDownloading
-          ? t.downloading
-          : `${t.downloadButton} (${resolution}x${resolution} ${format.toUpperCase()})`}
+        {isDownloading ? (
+          <span>{t?.downloading || "Generando descarga..."}</span>
+        ) : (
+          <span>
+            {t?.downloadButton || "Descargar QR"} ({resolution}×{resolution}{" "}
+            {format.toUpperCase()})
+          </span>
+        )}
       </button>
     </div>
   );
+};
+
+QRControls.propTypes = {
+  url: PropTypes.string.isRequired,
+  onUrlChange: PropTypes.func.isRequired,
+  resolution: PropTypes.number.isRequired,
+  onResolutionChange: PropTypes.func.isRequired,
+  format: PropTypes.string.isRequired,
+  onFormatChange: PropTypes.func.isRequired,
+  isTransparent: PropTypes.bool.isRequired,
+  onTransparentChange: PropTypes.func.isRequired,
+  onDownload: PropTypes.func.isRequired,
+  isDownloading: PropTypes.bool.isRequired,
+  isValidUrl: PropTypes.bool.isRequired,
 };

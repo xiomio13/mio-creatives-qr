@@ -9,7 +9,7 @@ const translations = {
     brandTitle: 'Mio Creatives',
     brandBadge: 'QR',
     subtitle: 'Generador estático y permanente. Sin enlaces intermediarios, sin suscripciones trampa y sin caducidad.',
-    
+
     // Preview
     emptyStateText: 'Ingresa un enlace o texto para generar tu código QR permanente.',
     colorLabel: 'Color del QR',
@@ -26,9 +26,13 @@ const translations = {
     resolutionLabel: 'Resolución de Descarga',
     formatLabel: 'Formato de Archivo',
     transparentLabel: 'Fondo transparente',
-    jpgWarning: '* El formato JPG no soporta transparencia y se genera siempre con fondo blanco.',
+    jpgWarning: 'El formato JPG no soporta transparencia y se genera siempre con fondo blanco.',
     downloadButton: 'Descargar QR',
     downloading: 'Generando descarga...',
+
+    // History (Nuevos campos para QRHistory)
+    historyTitle: 'Historial Reciente',
+    clearHistory: 'Borrar todo',
 
     // Footer
     footerNote: 'Generación local y privada sin cookies ni rastreo.',
@@ -57,9 +61,13 @@ const translations = {
     resolutionLabel: 'Download Resolution',
     formatLabel: 'File Format',
     transparentLabel: 'Transparent background',
-    jpgWarning: '* JPG format does not support transparency and always renders with a white background.',
+    jpgWarning: 'JPG format does not support transparency and always renders with a white background.',
     downloadButton: 'Download QR',
     downloading: 'Generating download...',
+
+    // History (Nuevos campos para QRHistory)
+    historyTitle: 'Recent History',
+    clearHistory: 'Clear all',
 
     // Footer
     footerNote: 'Local and private generation with zero cookies or tracking.',
@@ -88,9 +96,13 @@ const translations = {
     resolutionLabel: 'Resolução de Download',
     formatLabel: 'Formato do Arquivo',
     transparentLabel: 'Fundo transparente',
-    jpgWarning: '* O formato JPG não suporta transparência e sempre gera com fundo branco.',
+    jpgWarning: 'O formato JPG não suporta transparência e sempre gera com fundo branco.',
     downloadButton: 'Baixar QR',
     downloading: 'Gerando download...',
+
+    // History (Nuevos campos para QRHistory)
+    historyTitle: 'Histórico Recente',
+    clearHistory: 'Limpar tudo',
 
     // Footer
     footerNote: 'Geração local e privada sem cookies ou rastreamento.',

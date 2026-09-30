@@ -1,0 +1,56 @@
+/* src/components/layout/Navigation/Navigation.module.css */
+.navContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.tabGroup {
+  display: inline-flex;
+  background-color: #F1F5F9;
+  padding: 0.35rem;
+  border-radius: 12px;
+  gap: 0.25rem;
+  border: 1px solid var(--color-border, #E2E8F0);
+}
+
+.tabButton {
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, #64748B);
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.tabButton:hover {
+  color: var(--color-text-primary, #0F172A);
+}
+
+.tabButton:focus-visible {
+  outline: 2px solid #FF5500;
+  outline-offset: 2px;
+}
+
+.activeTab {
+  background-color: #FFFFFF;
+  color: var(--color-text-primary, #0F172A);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.countBadge {
+  background-color: #F5F3FF;
+  color: #7C3AED;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 700;
+}
