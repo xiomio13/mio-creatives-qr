@@ -1,12 +1,11 @@
 // src/components/qr/QRControls/QRControls.jsx
-import React, { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { useLanguage } from "../../../context/LanguageContext";
-import { analyzeContent } from "../../../utils/urlValidator";
 import styles from "./QRControls.module.css";
 
-const RESOLUTION_OPTIONS = [200, 500, 1000, 1500, 2000];
-const FORMAT_OPTIONS = ["png", "jpg", "svg"];
+const RESOLUTIONS = [200, 500, 1000, 1500, 2000];
+const FORMATS = ["png", "jpg", "svg"];
 
 export const QRControls = ({
   url,
@@ -18,30 +17,21 @@ export const QRControls = ({
   isTransparent,
   onTransparentChange,
   onDownload,
+  onCopy,
   isDownloading,
   isValidUrl,
 }) => {
   const { t } = useLanguage();
 
-  // Análisis semántico reactivo en memoria
-  const contentInfo = useMemo(() => analyzeContent(url), [url]);
-
   return (
     <div className={styles.controlsContainer}>
-      {/* Campo de texto con badge semántico */}
+      {/* 1. Input de Enlace o Texto */}
       <div className={styles.controlGroup}>
         <div className={styles.urlLabelRow}>
           <label htmlFor="qr-input-url" className={styles.label}>
             {t?.urlLabel || "Enlace web o texto"}
           </label>
-          {url.trim().length > 0 && (
-            <span className={styles.typeBadge} aria-hidden="true">
-              <span>{contentInfo.icon}</span>
-              <span>{contentInfo.label}</span>
-            </span>
-          )}
         </div>
-
         <input
           id="qr-input-url"
           type="text"
@@ -51,44 +41,24 @@ export const QRControls = ({
           }
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
-          aria-describedby={contentInfo.hint ? "url-semantic-hint" : undefined}
           autoComplete="off"
           spellCheck="false"
         />
-
-        {/* Sugerencia no intrusiva */}
-        {contentInfo.hint && (
-          <div
-            id="url-semantic-hint"
-            className={styles.semanticHint}
-            role="status"
-            aria-live="polite"
-          >
-            <span>💡</span>
-            <span>{contentInfo.hint}</span>
-          </div>
-        )}
       </div>
 
-      {/* Selector de Resolución */}
+      {/* 2. Selector de Resolución */}
       <div className={styles.controlGroup}>
-        <label className={styles.label}>
+        <span className={styles.label}>
           {t?.resolutionLabel || "Resolución de Descarga"}
-        </label>
-        <div
-          className={styles.segmentedControl}
-          role="radiogroup"
-          aria-label="Resolución de descarga"
-        >
-          {RESOLUTION_OPTIONS.map((res) => {
-            const isSelected = Number(resolution) === res;
+        </span>
+        <div className={styles.segmentedControl}>
+          {RESOLUTIONS.map((res) => {
+            const isActive = Number(resolution) === res;
             return (
               <button
                 key={res}
                 type="button"
-                role="radio"
-                aria-checked={isSelected}
-                className={`${styles.segmentedButton} ${isSelected ? styles.active : ""}`}
+                className={`${styles.segmentedButton} ${isActive ? styles.active : ""}`}
                 onClick={() => onResolutionChange(res)}
               >
                 {res}px
@@ -98,25 +68,19 @@ export const QRControls = ({
         </div>
       </div>
 
-      {/* Selector de Formato */}
+      {/* 3. Selector de Formato */}
       <div className={styles.controlGroup}>
-        <label className={styles.label}>
+        <span className={styles.label}>
           {t?.formatLabel || "Formato de Archivo"}
-        </label>
-        <div
-          className={styles.segmentedControl}
-          role="radiogroup"
-          aria-label="Formato de exportación"
-        >
-          {FORMAT_OPTIONS.map((fmt) => {
-            const isSelected = format === fmt;
+        </span>
+        <div className={styles.segmentedControl}>
+          {FORMATS.map((fmt) => {
+            const isActive = format.toLowerCase() === fmt;
             return (
               <button
                 key={fmt}
                 type="button"
-                role="radio"
-                aria-checked={isSelected}
-                className={`${styles.segmentedButton} ${isSelected ? styles.active : ""}`}
+                className={`${styles.segmentedButton} ${isActive ? styles.active : ""}`}
                 onClick={() => onFormatChange(fmt)}
               >
                 {fmt.toUpperCase()}
@@ -126,43 +90,63 @@ export const QRControls = ({
         </div>
       </div>
 
-      {/* Toggle de Transparencia */}
-      <div className={styles.controlGroup}>
+      {/* 4. Checkbox Fondo Transparente */}
+      <div>
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             className={styles.checkboxInput}
-            checked={format === "jpg" ? false : isTransparent}
+            checked={isTransparent && format !== "jpg"}
             disabled={format === "jpg"}
             onChange={(e) => onTransparentChange(e.target.checked)}
           />
           <span>{t?.transparentLabel || "Fondo transparente"}</span>
         </label>
-
         {format === "jpg" && (
           <p className={styles.warningNote}>
             {t?.jpgWarning ||
-              "El formato JPG no soporta transparencia y se genera siempre con fondo blanco."}
+              "* El formato JPG no soporta transparencia y se genera siempre con fondo blanco."}
           </p>
         )}
       </div>
 
-      {/* Botón Principal de Descarga */}
-      <button
-        type="button"
-        className={styles.downloadButton}
-        disabled={!isValidUrl || isDownloading}
-        onClick={onDownload}
-      >
-        {isDownloading ? (
-          <span>{t?.downloading || "Generando descarga..."}</span>
-        ) : (
-          <span>
-            {t?.downloadButton || "Descargar QR"} ({resolution}×{resolution}{" "}
-            {format.toUpperCase()})
-          </span>
-        )}
-      </button>
+      {/* 5. Fila de Acciones: Copiar y Descargar */}
+      <div className={styles.actionButtonsRow}>
+        <button
+          type="button"
+          className={styles.copyButton}
+          onClick={onCopy}
+          disabled={!isValidUrl || isDownloading}
+          title="Copiar imagen PNG al portapapeles"
+          aria-label="Copiar imagen PNG al portapapeles"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          Copiar
+        </button>
+
+        <button
+          type="button"
+          className={styles.downloadButton}
+          onClick={onDownload}
+          disabled={!isValidUrl || isDownloading}
+        >
+          {isDownloading
+            ? t?.downloading || "Generando descarga..."
+            : `${t?.downloadButton || "Descargar QR"} (${resolution}x${resolution} ${format.toUpperCase()})`}
+        </button>
+      </div>
     </div>
   );
 };
@@ -177,6 +161,7 @@ QRControls.propTypes = {
   isTransparent: PropTypes.bool.isRequired,
   onTransparentChange: PropTypes.func.isRequired,
   onDownload: PropTypes.func.isRequired,
+  onCopy: PropTypes.func.isRequired,
   isDownloading: PropTypes.bool.isRequired,
   isValidUrl: PropTypes.bool.isRequired,
 };

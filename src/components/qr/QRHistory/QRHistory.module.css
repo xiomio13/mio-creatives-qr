@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 860px;
   margin: 0 auto;
-  padding: 2rem 2.25rem;
+  padding: 1.75rem 2rem;
   background-color: #FFFFFF;
   border: 1px solid var(--color-border, #E2E8F0);
   border-radius: 20px;
@@ -15,18 +15,50 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #F1F5F9;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .title {
   font-family: var(--font-heading, "Montserrat", sans-serif);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: var(--color-text-primary, #0F172A);
-  letter-spacing: -0.01em;
+  color: #0F172A;
   margin: 0;
+}
+
+.createIconButton {
+  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.createIconButton:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.createIconButton:focus-visible {
+  outline: 2px solid #FF5500;
+  outline-offset: 2px;
 }
 
 .clearButton {
@@ -37,83 +69,16 @@
   font-weight: 500;
   color: #EF4444;
   cursor: pointer;
-  padding: 0.5rem 0.85rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  min-height: 44px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
-  transition: background-color var(--transition-fast, 150ms ease), color 150ms ease;
+  transition: background-color 150ms ease;
 }
 
 .clearButton:hover {
   background-color: #FEF2F2;
-  color: #DC2626;
-}
-
-.clearButton:focus-visible {
-  outline: 2px solid #EF4444;
-  outline-offset: 2px;
-}
-
-/* Estado Vacío (Empty State) */
-.emptyState {
-  text-align: center;
-  padding: 3rem 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.emptyIconWrapper {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: #FFF7ED;
-  color: #FF5500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.emptyTitle {
-  font-family: var(--font-heading, "Montserrat", sans-serif);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #0F172A);
-  margin: 0 0 0.5rem 0;
-}
-
-.emptyText {
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.9rem;
-  color: var(--color-text-secondary, #64748B);
-  max-width: 420px;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.5;
-}
-
-.goToGeneratorButton {
-  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
-  color: #FFFFFF;
-  border: none;
-  border-radius: 10px;
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  min-height: 48px;
-  display: inline-flex;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(255, 85, 0, 0.2);
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-
-.goToGeneratorButton:hover {
-  opacity: 0.94;
-  transform: translateY(-1px);
 }
 
 .historyList {
@@ -133,7 +98,7 @@
   border: 1px solid #E2E8F0;
   border-radius: 14px;
   padding: 1.15rem 1.25rem;
-  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .historyCard:hover {
@@ -142,8 +107,8 @@
 }
 
 .qrThumbnail {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
   border-radius: 10px;
   border: 1px solid #E2E8F0;
   background-color: #F8FAFC;
@@ -152,20 +117,13 @@
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  padding: 5px;
+  padding: 4px;
   box-sizing: border-box;
-  transition: transform var(--transition-fast, 150ms ease), border-color 150ms ease;
-}
-
-.historyCard:hover .qrThumbnail {
-  border-color: #FF5500;
-  transform: scale(1.03);
 }
 
 .qrThumbnail svg {
   width: 100%;
   height: 100%;
-  display: block;
 }
 
 .cardContent {
@@ -173,7 +131,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .titleRow {
@@ -184,9 +142,9 @@
 
 .itemName {
   font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.975rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-text-primary, #0F172A);
+  color: #0F172A;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -197,37 +155,32 @@
   font-family: var(--font-body, "Inter", sans-serif);
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0F172A;
-  padding: 0.35rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   border: 1.5px solid #FF5500;
-  border-radius: 8px;
+  border-radius: 6px;
   outline: none;
   width: 100%;
-  max-width: 320px;
-  box-shadow: 0 0 0 3px rgba(255, 85, 0, 0.15);
+  max-width: 280px;
 }
 
 .editIconButton {
   background: none;
   border: none;
-  padding: 0.35rem;
+  padding: 0.25rem;
   cursor: pointer;
   color: #94A3B8;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: color var(--transition-fast, 150ms ease), background-color 150ms ease;
+  border-radius: 4px;
 }
 
 .editIconButton:hover {
   color: #FF5500;
-  background-color: #FFF7ED;
 }
 
 .itemUrl {
   font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   color: #64748B;
   white-space: nowrap;
   overflow: hidden;
@@ -237,16 +190,15 @@
 .metaRow {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.775rem;
+  gap: 0.5rem;
+  font-size: 0.75rem;
   color: #94A3B8;
-  margin-top: 0.15rem;
 }
 
 .actionGroup {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -259,23 +211,17 @@
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0 1.15rem;
-  height: 44px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(255, 85, 0, 0.2);
-  transition: opacity var(--transition-fast, 150ms ease), transform 150ms ease;
+  transition: opacity 150ms ease;
 }
 
 .downloadActionButton:hover {
-  opacity: 0.93;
-  transform: translateY(-1px);
-}
-
-.downloadActionButton:focus-visible {
-  outline: 2px solid #7C3AED;
-  outline-offset: 2px;
+  opacity: 0.92;
 }
 
 .removeButton {
@@ -283,39 +229,121 @@
   border: none;
   color: #94A3B8;
   cursor: pointer;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-size: 1.35rem;
-  transition: color var(--transition-fast, 150ms ease), background-color var(--transition-fast, 150ms ease);
+  font-size: 1.3rem;
+  transition: color 150ms ease;
 }
 
 .removeButton:hover {
   color: #EF4444;
-  background-color: #FEF2F2;
 }
 
-.removeButton:focus-visible {
-  outline: 2px solid #EF4444;
-  outline-offset: 2px;
+/* Paginación limpia */
+.paginationFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #F1F5F9;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.85rem;
+  color: #64748B;
 }
 
-@media (max-width: 640px) {
-  .historyContainer {
-    padding: 1.25rem 1rem;
-  }
-  .historyCard {
-    flex-wrap: wrap;
-    gap: 0.85rem;
-  }
-  .actionGroup {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 0.25rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #F1F5F9;
-  }
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageButton {
+  min-height: 36px;
+  padding: 0 0.85rem;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0F172A;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.pageButton:hover:not(:disabled) {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.pageButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* Estado Vacío */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.emptyIconWrapper {
+  width: 56px;
+  height: 56px;
+  background-color: #FFF7ED;
+  color: #FF5500;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.emptyTitle {
+  font-family: var(--font-heading, "Montserrat", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.5rem;
+}
+
+.emptyText {
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.9rem;
+  color: #64748B;
+  max-width: 420px;
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.goToGeneratorButton {
+  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  min-height: 48px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.25);
+  transition: opacity 150ms ease;
+}
+
+.goToGeneratorButton:hover {
+  opacity: 0.92;
 }

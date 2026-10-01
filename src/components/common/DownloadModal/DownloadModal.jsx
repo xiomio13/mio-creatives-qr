@@ -1,32 +1,35 @@
 // src/components/common/DownloadModal/DownloadModal.jsx
-import React, { useState } from "react";
-import PropTypes from "prop-types";
-import styles from "./DownloadModal.module.css";
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import styles from './DownloadModal.module.css';
 
 export const DownloadModal = ({
   isOpen,
   onClose,
   onConfirm,
-  initialFormat = "png",
+  initialFormat = 'png',
   initialSize = 500,
+  initialTransparent = false,
 }) => {
   const [format, setFormat] = useState(initialFormat);
   const [size, setSize] = useState(initialSize);
+  const [isTransparent, setIsTransparent] = useState(initialTransparent);
 
   if (!isOpen) return null;
 
+  const isJpg = format.toLowerCase() === 'jpg';
+
   const handleDownload = () => {
-    onConfirm({ format, size: Number(size) });
+    onConfirm({
+      format,
+      size: Number(size),
+      transparentBg: isJpg ? false : isTransparent,
+    });
     onClose();
   };
 
   return (
-    <div
-      className={styles.overlay}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h3 className={styles.title}>Descargar Código QR</h3>
@@ -40,15 +43,11 @@ export const DownloadModal = ({
           </button>
         </div>
 
-        <p className={styles.subtitle}>
-          Selecciona el formato y la resolución deseada
-        </p>
+        <p className={styles.subtitle}>Selecciona el formato y la resolución deseada</p>
 
         <div className={styles.fieldGroup}>
           <div className={styles.field}>
-            <label htmlFor="modal-format" className={styles.label}>
-              Formato
-            </label>
+            <label htmlFor="modal-format" className={styles.label}>Formato</label>
             <select
               id="modal-format"
               className={styles.select}
@@ -62,9 +61,7 @@ export const DownloadModal = ({
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="modal-size" className={styles.label}>
-              Tamaño
-            </label>
+            <label htmlFor="modal-size" className={styles.label}>Tamaño</label>
             <select
               id="modal-size"
               className={styles.select}
@@ -79,6 +76,21 @@ export const DownloadModal = ({
             </select>
           </div>
         </div>
+
+        {/* Checkbox condicional: solo visible si el formato es PNG o SVG */}
+        {!isJpg && (
+          <div className={styles.checkboxContainer}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                checked={isTransparent}
+                onChange={(e) => setIsTransparent(e.target.checked)}
+              />
+              <span>Fondo transparente</span>
+            </label>
+          </div>
+        )}
 
         <button
           type="button"
@@ -106,13 +118,11 @@ export const DownloadModal = ({
   );
 };
 
-// Export por defecto adicional para garantizar compatibilidad total
-export default DownloadModal;
-
 DownloadModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   initialFormat: PropTypes.string,
   initialSize: PropTypes.number,
+  initialTransparent: PropTypes.bool,
 };

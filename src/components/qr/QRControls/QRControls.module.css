@@ -188,3 +188,105 @@
   outline: 2px solid #7C3AED;
   outline-offset: 2px;
 }
+
+/* Fila contenedora: alinea ambos botones al centro vertical y horizontal */
+.actionButtonsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* Botón Copiar: altura fija exacta de 48px */
+.copyButton {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  padding: 0 1.25rem;
+  background-color: #FFFFFF;
+  color: #0F172A;
+  border: 1.5px solid var(--color-border, #E2E8F0);
+  border-radius: 12px;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+  box-sizing: border-box;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.copyButton:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.copyButton:focus-visible {
+  outline: 2px solid #FF5500;
+  outline-offset: 2px;
+}
+
+.copyButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #E2E8F0;
+}
+
+/* Botón Descargar: altura fija exacta de 48px y ocupa el resto del ancho */
+.downloadButton {
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  padding: 0 1.25rem;
+  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
+  color: #FFFFFF !important;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.25);
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0; /* Anula márgenes externos que causen desalineación */
+  transition: transform var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease), opacity var(--transition-fast, 150ms ease);
+}
+
+.downloadButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3);
+}
+
+.downloadButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Ajuste móvil */
+@media (max-width: 640px) {
+  .actionButtonsRow {
+    flex-direction: column;
+  }
+  .copyButton,
+  .downloadButton {
+    width: 100%;
+  }
+}
