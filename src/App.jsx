@@ -1,25 +1,27 @@
 // src/App.jsx
-import QRCode from "qrcode";
 import React, { useState, useRef, useCallback } from "react";
 import { useLanguage } from "./context/LanguageContext";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 import { Header } from "./components/layout/Header";
 import { LanguageSelector } from "./components/layout/LanguageSelector/LanguageSelector";
 import { Navigation } from "./components/layout/Navigation/Navigation";
 import { Footer } from "./components/layout/Footer";
+import { FAQView } from "./components/layout/FAQ/FAQView";
 import { QRPreview } from "./components/qr/QRPreview/QRPreview";
 import { QRControls } from "./components/qr/QRControls/QRControls";
 import { QRHistory } from "./components/qr/QRHistory/QRHistory";
 import { DownloadModal } from "./components/common/DownloadModal/DownloadModal";
 import { Toast } from "./components/common/Toast/Toast";
-import { useLocalStorage } from "./hooks/useLocalStorage";
-import { exportQRCode, copyQRToClipboard } from "./services/qrExportService";
+import { exportQRCode } from "./services/qrExportService";
 import "./App.css";
 
 export default function App() {
   const { t } = useLanguage();
 
-  // Estados de navegación y generación
+  // Pestaña activa: 'generator' | 'history' | 'faq'
   const [activeTab, setActiveTab] = useState("generator");
+
+  // Estado del generador
   const [url, setUrl] = useState("");
   const [resolution, setResolution] = useState(500);
   const [format, setFormat] = useState("png");
@@ -27,57 +29,32 @@ export default function App() {
   const [isTransparent, setIsTransparent] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Estado del Toast accesible
-  const [toastMessage, setToastMessage] = useState("");
-
-  // Persistencia local en el navegador
+  // Historial en localStorage
   const [history, setHistory] = useLocalStorage("mio_qr_history", []);
 
-  // Estado del modal de re-descarga del historial
+  // Modal de descarga del historial
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
 
-  // Marcado SVG en memoria
+  // Toast accesible
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  // Almacenamiento en memoria del SVG renderizado
   const qrSvgMarkupRef = useRef("");
 
   const handleQRReady = useCallback((svgString) => {
     qrSvgMarkupRef.current = svgString || "";
   }, []);
 
-  const isValidUrl = Boolean(url && url.trim().length > 0);
-
-  // Acción rápida: Copiar QR en imagen PNG al portapapeles
-  const handleCopyQR = async () => {
-    if (!isValidUrl) return;
-
-    const svgMarkup = qrSvgMarkupRef.current;
-    if (!svgMarkup) {
-      setToastMessage(t?.emptyStateText || "Ingresa un enlace o texto válido.");
-      return;
-    }
-
-    try {
-      await copyQRToClipboard({
-        svgMarkup,
-        size: 1000,
-        transparentBg: format === "jpg" ? false : isTransparent,
-      });
-      setToastMessage("¡Código QR copiado al portapapeles!");
-    } catch (err) {
-      console.error("Error al copiar al portapapeles:", err);
-      setToastMessage("No se pudo copiar al portapapeles en este navegador.");
-    }
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
   };
 
-  // Descarga desde la vista Generador
   const handleDownload = async () => {
-    if (!isValidUrl || isDownloading) return;
-
     const svgMarkup = qrSvgMarkupRef.current;
-    if (!svgMarkup) {
-      setToastMessage(t?.emptyStateText || "Ingresa un enlace o texto válido.");
-      return;
-    }
+    if (!svgMarkup) return;
 
     try {
       setIsDownloading(true);
@@ -89,11 +66,11 @@ export default function App() {
         filename: "mio-creatives-qr",
       });
 
-      // Guardar en el historial local
+      // Guardar automáticamente en el historial local
       const newItem = {
-        id: (crypto.randomUUID && crypto.randomUUID()) || String(Date.now()),
-        value: url.trim(),
-        name: "",
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        value: url,
+        name: url.replace(/^https?:\/\//i, "").slice(0, 30),
         color,
         format,
         size: Number(resolution),
@@ -101,70 +78,41 @@ export default function App() {
         date: new Date().toLocaleDateString(),
       };
 
-      setHistory((prevHistory) => {
-        const filtered = prevHistory.filter(
-          (item) => item.value !== newItem.value,
-        );
-        return [newItem, ...filtered].slice(0, 10);
-      });
-
-      setToastMessage("¡Código QR descargado exitosamente!");
-    } catch (error) {
-      console.error("Error al exportar QR:", error);
-      setToastMessage("Ocurrió un error al procesar la descarga.");
+      setHistory((prev) =>
+        [newItem, ...prev.filter((i) => i.value !== url)].slice(0, 20),
+      );
+      triggerToast(t?.downloading || "¡Descarga iniciada con éxito!");
+    } catch (err) {
+      console.error(err);
+      triggerToast("Error al exportar la imagen.");
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // Re-descarga desde el modal del Historial
-  const handleModalConfirm = async ({
-    format: modalFormat,
-    size: modalSize,
-    transparentBg,
-  }) => {
-    if (!selectedHistoryItem) return;
-
-    try {
-      const isJpg = modalFormat === "jpg";
-      const effectiveTransparent = isJpg ? false : Boolean(transparentBg);
-
-      // Regenerar el marcado SVG asegurando canal alfa transparente si aplica
-      const svgMarkup = await QRCode.toString(selectedHistoryItem.value, {
-        type: "svg",
-        errorCorrectionLevel: "H",
-        margin: 1,
-        color: {
-          dark: selectedHistoryItem.color || "#000000",
-          light: effectiveTransparent ? "#00000000" : "#FFFFFF",
-        },
-      });
-
-      await exportQRCode({
-        svgMarkup,
-        size: modalSize,
-        format: modalFormat,
-        transparentBg: effectiveTransparent,
-        filename: selectedHistoryItem.name || "mio-creatives-qr",
-      });
-
-      setToastMessage("¡Descarga completada!");
-    } catch (error) {
-      console.error("Error en re-descarga:", error);
-      setToastMessage("No se pudo re-descargar el código seleccionado.");
-    }
-  };
-
-  // Acciones sobre el historial
-  const handleSelectHistoryItem = (item) => {
+  // Acciones sobre el Historial
+  const handleSelectFromHistory = (item) => {
     setUrl(item.value);
-    setFormat(item.format);
-    setResolution(item.size);
     if (item.color) setColor(item.color);
+    if (item.format) setFormat(item.format);
+    if (item.size) setResolution(item.size);
     if (typeof item.isTransparent === "boolean")
       setIsTransparent(item.isTransparent);
     setActiveTab("generator");
-    setToastMessage("Parámetros cargados en el generador.");
+  };
+
+  const handleRemoveHistoryItem = (id) => {
+    setHistory((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleClearHistory = () => {
+    setHistory([]);
+  };
+
+  const handleUpdateName = (id, newName) => {
+    setHistory((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, name: newName } : item)),
+    );
   };
 
   const handleOpenDownloadModal = (item) => {
@@ -172,30 +120,51 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  const handleUpdateName = (id, newName) => {
-    setHistory((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, name: newName } : item)),
-    );
-    setToastMessage("Nombre actualizado.");
-  };
+  const handleConfirmModalDownload = async ({
+    format: modalFormat,
+    size: modalSize,
+    transparentBg: modalTransparent,
+  }) => {
+    if (!selectedHistoryItem) return;
 
-  const handleRemoveHistoryItem = (id) => {
-    setHistory((prev) => prev.filter((item) => item.id !== id));
-    setToastMessage("Elemento eliminado del historial.");
-  };
-
-  const handleClearHistory = () => {
-    setHistory([]);
-    setToastMessage("Historial vaciado.");
+    try {
+      await exportQRCode({
+        svgMarkup: qrSvgMarkupRef.current || "",
+        size: Number(modalSize),
+        format: modalFormat,
+        transparentBg: modalTransparent,
+        filename: selectedHistoryItem.name || "mio-creatives-qr",
+      });
+      triggerToast(t?.downloading || "¡Descarga iniciada con éxito!");
+    } catch (err) {
+      console.error(err);
+      triggerToast("Error al descargar el archivo.");
+    }
   };
 
   return (
-    <div className="appContainer">
-      <header className="topBar">
+    <div
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "1rem 2rem",
+        }}
+      >
         <LanguageSelector />
       </header>
 
-      <main className="mainContent">
+      <main
+        style={{
+          flex: 1,
+          maxWidth: "1100px",
+          margin: "0 auto",
+          width: "100%",
+          padding: "0 1.5rem 3rem",
+        }}
+      >
         <Header />
 
         <Navigation
@@ -204,21 +173,24 @@ export default function App() {
           historyCount={history.length}
         />
 
-        {activeTab === "generator" ? (
+        {activeTab === "generator" && (
           <div className="generatorCard">
-            {/* Columna Izquierda: Vista Previa */}
-            <section className="previewColumn">
+            <section style={{ display: "flex", justifyContent: "center" }}>
               <QRPreview
                 value={url}
                 color={color}
                 onColorChange={setColor}
                 isTransparent={format === "jpg" ? false : isTransparent}
                 onReady={handleQRReady}
+                onCopySuccess={() =>
+                  triggerToast(
+                    t?.copiedToast || "¡Código QR copiado al portapapeles!",
+                  )
+                }
               />
             </section>
 
-            {/* Columna Derecha: Controles */}
-            <section className="controlsColumn">
+            <section>
               <QRControls
                 url={url}
                 onUrlChange={setUrl}
@@ -229,16 +201,17 @@ export default function App() {
                 isTransparent={isTransparent}
                 onTransparentChange={setIsTransparent}
                 onDownload={handleDownload}
-                onCopy={handleCopyQR}
                 isDownloading={isDownloading}
-                isValidUrl={isValidUrl}
+                isValidUrl={Boolean(url && url.trim().length > 0)}
               />
             </section>
           </div>
-        ) : (
+        )}
+
+        {activeTab === "history" && (
           <QRHistory
             items={history}
-            onSelect={handleSelectHistoryItem}
+            onSelect={handleSelectFromHistory}
             onRemove={handleRemoveHistoryItem}
             onClear={handleClearHistory}
             onOpenDownloadModal={handleOpenDownloadModal}
@@ -246,6 +219,8 @@ export default function App() {
             onGoToGenerator={() => setActiveTab("generator")}
           />
         )}
+
+        {activeTab === "faq" && <FAQView />}
       </main>
 
       <Footer />
@@ -254,14 +229,18 @@ export default function App() {
       <DownloadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={handleModalConfirm}
+        onConfirm={handleConfirmModalDownload}
         initialFormat={selectedHistoryItem?.format || "png"}
         initialSize={selectedHistoryItem?.size || 500}
         initialTransparent={selectedHistoryItem?.isTransparent || false}
       />
 
       {/* Notificación Toast accesible */}
-      <Toast message={toastMessage} onClose={() => setToastMessage("")} />
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }

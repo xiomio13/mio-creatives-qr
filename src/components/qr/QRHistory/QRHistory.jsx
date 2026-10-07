@@ -1,11 +1,9 @@
 // src/components/qr/QRHistory/QRHistory.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import QRCode from "qrcode";
 import { useLanguage } from "../../../context/LanguageContext";
 import styles from "./QRHistory.module.css";
-
-const ITEMS_PER_PAGE = 10;
 
 const HistoryThumbnail = ({ value, color }) => {
   const [svgMarkup, setSvgMarkup] = useState("");
@@ -59,16 +57,6 @@ export const QRHistory = ({
   const { t } = useLanguage();
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Cálculo de paginación O(1) en memoria
-  const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
-  const validPage = Math.min(currentPage, totalPages);
-
-  const paginatedItems = useMemo(() => {
-    const start = (validPage - 1) * ITEMS_PER_PAGE;
-    return items.slice(start, start + ITEMS_PER_PAGE);
-  }, [items, validPage]);
 
   const handleStartEditing = (item) => {
     setEditingId(item.id);
@@ -83,22 +71,25 @@ export const QRHistory = ({
   };
 
   const handleKeyDown = (e, id) => {
-    if (e.key === "Enter") handleSaveName(id);
-    if (e.key === "Escape") setEditingId(null);
+    if (e.key === "Enter") {
+      handleSaveName(id);
+    } else if (e.key === "Escape") {
+      setEditingId(null);
+    }
   };
 
-  // 1. Estado vacío: Botón conectado que lleva al generador
+  // Estado vacío estructurado y multilingüe
   if (!items || items.length === 0) {
     return (
       <section
         className={styles.historyContainer}
-        aria-label="Historial de códigos"
+        aria-label={t?.historyTitle || "Mis Códigos Guardados"}
       >
         <div className={styles.emptyState}>
           <div className={styles.emptyIconWrapper}>
             <svg
-              width="28"
-              height="28"
+              width="32"
+              height="32"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -113,81 +104,74 @@ export const QRHistory = ({
             </svg>
           </div>
           <h3 className={styles.emptyTitle}>
-            No tienes códigos guardados todavía
+            {t?.emptyHistoryTitle || "No tienes códigos guardados todavía"}
           </h3>
           <p className={styles.emptyText}>
-            Cada código QR que generes y descargues se guardará automáticamente
-            aquí en tu navegador para que puedas re-exportarlo en cualquier
-            formato cuando lo necesites.
+            {t?.emptyHistoryText ||
+              "Cada código QR que generes y descargues se guardará automáticamente en este navegador."}
           </p>
           <button
             type="button"
             className={styles.goToGeneratorButton}
             onClick={onGoToGenerator}
           >
-            Crear mi primer código QR
+            {t?.createFirstQr || "Crear mi primer código QR"}
           </button>
         </div>
       </section>
     );
   }
 
-  const startCount = (validPage - 1) * ITEMS_PER_PAGE + 1;
-  const endCount = Math.min(validPage * ITEMS_PER_PAGE, items.length);
-
   return (
     <section
       className={styles.historyContainer}
       aria-label={t?.historyTitle || "Mis Códigos Guardados"}
     >
-      {/* Cabecera con botón "+ Nuevo QR" y acción "Borrar todo" */}
       <div className={styles.historyHeader}>
-        <h3 className={styles.title}>Mis Códigos Guardados ({items.length})</h3>
+        <h3 className={styles.title}>
+          {t?.historyTitle || "Mis Códigos Guardados"} ({items.length})
+        </h3>
 
-        <div className={styles.headerActions}>
+        <div
+          className={styles.headerActions}
+          style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+        >
           <button
             type="button"
-            className={styles.createIconButton}
+            className={styles.goToGeneratorButton}
             onClick={onGoToGenerator}
-            title="Crear un nuevo código QR"
+            style={{
+              padding: "0.45rem 0.9rem",
+              fontSize: "0.85rem",
+              minHeight: "40px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.35rem",
+            }}
           >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nuevo QR
+            <span>+</span> {t?.newQrBtn || "Nuevo QR"}
           </button>
 
           <button
             type="button"
             onClick={onClear}
             className={styles.clearButton}
-            aria-label="Borrar todo el historial"
+            aria-label={t?.clearHistory || "Borrar todo"}
           >
             {t?.clearHistory || "Borrar todo"}
           </button>
         </div>
       </div>
 
-      {/* Lista de Códigos (Límite visual de 10 ítems) */}
       <ul className={styles.historyList}>
-        {paginatedItems.map((item) => (
+        {items.map((item) => (
           <li key={item.id} className={styles.historyCard}>
             <div
               onClick={() => onSelect(item)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && onSelect(item)}
-              title="Cargar en el Generador"
+              title={t?.generatorTab || "Cargar en el Generador"}
               style={{ cursor: "pointer" }}
             >
               <HistoryThumbnail value={item.value} color={item.color} />
@@ -245,7 +229,7 @@ export const QRHistory = ({
                 <span>{item.date}</span>
                 <span>•</span>
                 <span>
-                  Último formato: {item.format?.toUpperCase()} ({item.size}px)
+                  {item.format?.toUpperCase()} ({item.size}px)
                 </span>
               </div>
             </div>
@@ -258,8 +242,8 @@ export const QRHistory = ({
                 aria-label={`Exportar ${item.name || item.value}`}
               >
                 <svg
-                  width="15"
-                  height="15"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -271,7 +255,7 @@ export const QRHistory = ({
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Descargar
+                {t?.downloadAction || "Descargar"}
               </button>
 
               <button
@@ -287,40 +271,33 @@ export const QRHistory = ({
         ))}
       </ul>
 
-      {/* Paginador (se activa solo si hay más de 10 códigos guardados) */}
-      {items.length > ITEMS_PER_PAGE && (
-        <div className={styles.paginationFooter}>
-          <span>
-            Mostrando{" "}
-            <strong>
-              {startCount} - {endCount}
-            </strong>{" "}
-            de <strong>{items.length}</strong> códigos
-          </span>
-
-          <div className={styles.paginationControls}>
-            <button
-              type="button"
-              className={styles.pageButton}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={validPage === 1}
-            >
-              Anterior
-            </button>
-            <span className={styles.pageInfo}>
-              {validPage} / {totalPages}
-            </span>
-            <button
-              type="button"
-              className={styles.pageButton}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={validPage === totalPages}
-            >
-              Siguiente
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Nota de Privacidad y Almacenamiento Local */}
+      <footer
+        style={{
+          marginTop: "1.75rem",
+          padding: "0.85rem 1rem",
+          backgroundColor: "#F8FAFC",
+          border: "1px solid #E2E8F0",
+          borderRadius: "10px",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "0.65rem",
+        }}
+      >
+        <span style={{ fontSize: "1rem", lineHeight: 1.2 }}>🔒</span>
+        <p
+          style={{
+            fontFamily: 'var(--font-body, "Inter", sans-serif)',
+            fontSize: "0.785rem",
+            lineHeight: 1.45,
+            color: "#64748B",
+            margin: 0,
+          }}
+        >
+          {t?.historyPrivacyNotice ||
+            "Tus códigos se guardan de forma 100% privada únicamente en este dispositivo. Si borras el historial o los datos de navegación de tu navegador, esta lista se reiniciará."}
+        </p>
+      </footer>
     </section>
   );
 };
