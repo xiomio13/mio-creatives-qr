@@ -1,213 +1,152 @@
 // src/services/qrExportService.js
+import QRCode from "qrcode";
 
 /**
- * Prepara y sanitiza el marcado SVG eliminando o inyectando el fondo según el formato.
- *
- * @param {string} svgMarkup - Código SVG bruto generado.
- * @param {boolean} transparentBg - Si se solicita fondo transparente.
- * @param {boolean} isJpg - Si el formato destino es JPG.
- * @returns {string} - SVG procesado y listo para renderizar.
+ * Disparador nativo y seguro de descargas de archivos Blob o DataURL.
  */
-function prepareSvgMarkup(svgMarkup, transparentBg, isJpg) {
-  let cleanedSvg = svgMarkup || "";
+const triggerDownload = (blobOrUrl, filename) => {
+  const isBlob = blobOrUrl instanceof Blob;
+  const downloadUrl = isBlob ? URL.createObjectURL(blobOrUrl) : blobOrUrl;
 
-  if (isJpg) {
-    // JPG no soporta transparencia: garantizamos fondo blanco sólido
-    if (cleanedSvg.includes("<rect")) {
-      cleanedSvg = cleanedSvg.replace(
-        /<rect[^>]*fill="[^"]*"[^>]*>/i,
-        '<rect width="100%" height="100%" fill="#FFFFFF"/>',
-      );
-    } else {
-      cleanedSvg = cleanedSvg.replace(
-        /(<svg[^>]*>)/i,
-        '$1<rect width="100%" height="100%" fill="#FFFFFF"/>',
-      );
-    }
-  } else if (transparentBg) {
-    // Si se pide transparente, eliminamos cualquier rectángulo que actúe de fondo blanco
-    cleanedSvg = cleanedSvg.replace(
-      /<rect[^>]*fill="(?:#ffffff|#fff|white)"[^>]*\/?>(?:<\/rect>)?/gi,
-      "",
-    );
-    cleanedSvg = cleanedSvg.replace(
-      /<rect[^>]*fill="rgba?\(255,\s*255,\s*255[^"]*\)"[^>]*\/?>(?:<\/rect>)?/gi,
-      "",
-    );
-  }
-
-  return cleanedSvg;
-}
-
-/**
- * Descarga en el navegador cualquier archivo a partir de un Blob o DataURL.
- */
-function triggerBrowserDownload(url, filename) {
   const link = document.createElement("a");
-  link.href = url;
+  link.href = downloadUrl;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-}
+
+  if (isBlob) {
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 300);
+  }
+};
 
 /**
- * Exporta el código QR en PNG, JPG o SVG respetando la transparencia solicitada.
- *
- * @param {Object} options
- * @param {string} options.svgMarkup - Código SVG generado por la librería QRCode.
- * @param {number} [options.size=500] - Resolución en píxeles.
- * @param {string} [options.format='png'] - Formato ('png', 'jpg', 'svg').
- * @param {boolean} [options.transparentBg=false] - Transparencia activa o inactiva.
- * @param {string} [options.filename='mio-creatives-qr'] - Nombre base del archivo.
- * @returns {Promise<void>}
+ * Exporta y descarga un código QR a partir de su texto/URL sin depender del DOM.
+ * @param {Object} params
+ * @param {string} params.value - Texto o URL a codificar.
+ * @param {number} params.size - Resolución en píxeles (200 a 2000).
+ * @param {'png' | 'jpg' | 'svg'} params.format - Formato de exportación.
+ * @param {boolean} params.transparentBg - Si conserva fondo transparente.
+ * @param {string} params.color - Color de los módulos del QR (por defecto #000000).
+ * @param {string} [params.filename] - Nombre del archivo descargado.
  */
-export async function exportQRCode({
-  svgMarkup,
+export const exportQRCode = async ({
+  value,
   size = 500,
   format = "png",
   transparentBg = false,
+  color = "#000000",
   filename = "mio-creatives-qr",
-}) {
-  const currentFormat = format.toLowerCase();
-  const isJpg = currentFormat === "jpg";
-  const effectiveTransparent = isJpg ? false : Boolean(transparentBg);
-
-  const finalSvg = prepareSvgMarkup(svgMarkup, effectiveTransparent, isJpg);
-
-  // 1. Exportación Vectorial SVG directa
-  if (currentFormat === "svg") {
-    const blob = new Blob([finalSvg], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    triggerBrowserDownload(url, `${filename}.svg`);
-    URL.revokeObjectURL(url);
-    return;
-  }
-
-  // 2. Exportación Raster (PNG o JPG) mediante Canvas nativo
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const svgBlob = new Blob([finalSvg], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const url = URL.createObjectURL(svgBlob);
-
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-          URL.revokeObjectURL(url);
-          reject(new Error("No se pudo inicializar el contexto de Canvas 2D."));
-          return;
-        }
-
-        // Control del lienzo
-        if (effectiveTransparent) {
-          ctx.clearRect(0, 0, size, size); // Canal alfa 0 (100% transparente)
-        } else {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, size, size); // Fondo sólido blanco
-        }
-
-        ctx.drawImage(img, 0, 0, size, size);
-        URL.revokeObjectURL(url);
-
-        const mimeType = isJpg ? "image/jpeg" : "image/png";
-        const dataUrl = canvas.toDataURL(mimeType, 0.95);
-        triggerBrowserDownload(
-          dataUrl,
-          `${filename}-${size}x${size}.${currentFormat}`,
-        );
-        resolve();
-      } catch (err) {
-        URL.revokeObjectURL(url);
-        reject(err);
-      }
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Error al decodificar la matriz SVG en el lienzo."));
-    };
-
-    img.src = url;
-  });
-}
-
-/**
- * Copia la imagen PNG resultante directamente al portapapeles (Clipboard API).
- */
-export async function copyQRToClipboard({
-  svgMarkup,
-  size = 1000,
-  transparentBg = false,
-}) {
-  if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+}) => {
+  if (!value || typeof value !== "string") {
     throw new Error(
-      "El navegador no soporta la escritura directa de imágenes en el portapapeles.",
+      "No se proporcionó un texto o enlace válido para generar el código QR.",
     );
   }
 
-  const finalSvg = prepareSvgMarkup(svgMarkup, Boolean(transparentBg), false);
+  const normalizedFormat = (format || "png").toLowerCase();
+  const sanitizedFilename = `${filename}-${size}x${size}.${normalizedFormat}`;
+  const isJpg = normalizedFormat === "jpg";
+  const shouldBeTransparent = isJpg ? false : Boolean(transparentBg);
+
+  // 1. Exportación Vectorial SVG
+  if (normalizedFormat === "svg") {
+    const svgString = await QRCode.toString(value, {
+      type: "svg",
+      errorCorrectionLevel: "H",
+      margin: 1,
+      color: {
+        dark: color || "#000000",
+        light: shouldBeTransparent ? "#00000000" : "#FFFFFF",
+      },
+    });
+
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    triggerDownload(blob, sanitizedFilename);
+    return;
+  }
+
+  // 2. Exportación Rasterizada (PNG / JPG) vía Canvas en memoria
+  const canvas = document.createElement("canvas");
+  canvas.width = Number(size);
+  canvas.height = Number(size);
+
+  await QRCode.toCanvas(canvas, value, {
+    width: Number(size),
+    margin: 1,
+    errorCorrectionLevel: "H",
+    color: {
+      dark: color || "#000000",
+      light: shouldBeTransparent ? "#00000000" : "#FFFFFF",
+    },
+  });
 
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const svgBlob = new Blob([finalSvg], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const url = URL.createObjectURL(svgBlob);
+    const mimeType = isJpg ? "image/jpeg" : "image/png";
+    const quality = isJpg ? 0.95 : 1.0;
 
-    img.onload = async () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-          URL.revokeObjectURL(url);
-          reject(new Error("Contexto Canvas no disponible."));
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Fallo al generar el archivo de imagen."));
           return;
         }
+        triggerDownload(blob, sanitizedFilename);
+        resolve();
+      },
+      mimeType,
+      quality,
+    );
+  });
+};
 
-        if (transparentBg) {
-          ctx.clearRect(0, 0, size, size);
-        } else {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, size, size);
-        }
+/**
+ * Copia el código QR generado directamente al portapapeles en formato PNG.
+ */
+export const copyQRToClipboard = async ({
+  value,
+  size = 1000,
+  transparentBg = false,
+  color = "#000000",
+}) => {
+  if (!value) {
+    throw new Error("No hay texto o enlace para copiar.");
+  }
 
-        ctx.drawImage(img, 0, 0, size, size);
-        URL.revokeObjectURL(url);
+  if (!navigator.clipboard || !window.ClipboardItem) {
+    throw new Error(
+      "Tu navegador no soporta la copia directa de imágenes al portapapeles.",
+    );
+  }
 
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            reject(new Error("Error al generar el Blob PNG."));
-            return;
-          }
-          try {
-            const clipboardItem = new ClipboardItem({ "image/png": blob });
-            await navigator.clipboard.write([clipboardItem]);
-            resolve();
-          } catch (clipErr) {
-            reject(clipErr);
-          }
-        }, "image/png");
+  const canvas = document.createElement("canvas");
+  canvas.width = Number(size);
+  canvas.height = Number(size);
+
+  await QRCode.toCanvas(canvas, value, {
+    width: Number(size),
+    margin: 1,
+    errorCorrectionLevel: "H",
+    color: {
+      dark: color || "#000000",
+      light: transparentBg ? "#00000000" : "#FFFFFF",
+    },
+  });
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        reject(new Error("Fallo al generar la imagen para el portapapeles."));
+        return;
+      }
+
+      try {
+        const item = new ClipboardItem({ "image/png": blob });
+        await navigator.clipboard.write([item]);
+        resolve(true);
       } catch (err) {
-        URL.revokeObjectURL(url);
         reject(err);
       }
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Error al cargar la imagen para el portapapeles."));
-    };
-
-    img.src = url;
+    }, "image/png");
   });
-}
+};

@@ -4,8 +4,8 @@ import PropTypes from "prop-types";
 import { useLanguage } from "../../../context/LanguageContext";
 import styles from "./QRControls.module.css";
 
-const RESOLUTIONS = [200, 500, 1000, 1500, 2000];
-const FORMATS = ["png", "jpg", "svg"];
+const RESOLUTION_OPTIONS = [200, 500, 1000, 1500, 2000];
+const FORMAT_OPTIONS = ["png", "jpg", "svg"];
 
 export const QRControls = ({
   url,
@@ -22,10 +22,11 @@ export const QRControls = ({
   isValidUrl,
 }) => {
   const { t } = useLanguage();
+  const isJpg = format.toLowerCase() === "jpg";
 
   return (
     <div className={styles.controlsContainer}>
-      {/* 1. Input de Enlace o Texto */}
+      {/* 1. Grupo de Entrada de URL o Texto */}
       <div className={styles.controlGroup}>
         <div className={styles.urlLabelRow}>
           <label htmlFor="qr-input-url" className={styles.label}>
@@ -51,13 +52,19 @@ export const QRControls = ({
         <span className={styles.label}>
           {t?.resolutionLabel || "Resolución de Descarga"}
         </span>
-        <div className={styles.segmentedControl}>
-          {RESOLUTIONS.map((res) => {
+        <div
+          className={styles.segmentedControl}
+          role="radiogroup"
+          aria-label="Resolución"
+        >
+          {RESOLUTION_OPTIONS.map((res) => {
             const isActive = Number(resolution) === res;
             return (
               <button
                 key={res}
                 type="button"
+                role="radio"
+                aria-checked={isActive}
                 className={`${styles.segmentedButton} ${isActive ? styles.active : ""}`}
                 onClick={() => onResolutionChange(res)}
               >
@@ -73,13 +80,19 @@ export const QRControls = ({
         <span className={styles.label}>
           {t?.formatLabel || "Formato de Archivo"}
         </span>
-        <div className={styles.segmentedControl}>
-          {FORMATS.map((fmt) => {
+        <div
+          className={styles.segmentedControl}
+          role="radiogroup"
+          aria-label="Formato"
+        >
+          {FORMAT_OPTIONS.map((fmt) => {
             const isActive = format.toLowerCase() === fmt;
             return (
               <button
                 key={fmt}
                 type="button"
+                role="radio"
+                aria-checked={isActive}
                 className={`${styles.segmentedButton} ${isActive ? styles.active : ""}`}
                 onClick={() => onFormatChange(fmt)}
               >
@@ -90,19 +103,19 @@ export const QRControls = ({
         </div>
       </div>
 
-      {/* 4. Checkbox Fondo Transparente */}
-      <div>
+      {/* 4. Checkbox de Fondo Transparente */}
+      <div className={styles.controlGroup}>
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"
             className={styles.checkboxInput}
-            checked={isTransparent && format !== "jpg"}
-            disabled={format === "jpg"}
+            checked={isTransparent && !isJpg}
+            disabled={isJpg}
             onChange={(e) => onTransparentChange(e.target.checked)}
           />
           <span>{t?.transparentLabel || "Fondo transparente"}</span>
         </label>
-        {format === "jpg" && (
+        {isJpg && (
           <p className={styles.warningNote}>
             {t?.jpgWarning ||
               "* El formato JPG no soporta transparencia y se genera siempre con fondo blanco."}
@@ -110,19 +123,43 @@ export const QRControls = ({
         )}
       </div>
 
-      {/* 5. Fila de Acciones: Copiar y Descargar */}
-      <div className={styles.actionButtonsRow}>
+      {/* 5. Acciones: Botón Copiar + Botón Descargar */}
+      <div
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          alignItems: "center",
+          width: "100%",
+          marginTop: "0.5rem",
+        }}
+      >
         <button
           type="button"
-          className={styles.copyButton}
           onClick={onCopy}
           disabled={!isValidUrl || isDownloading}
-          title="Copiar imagen PNG al portapapeles"
-          aria-label="Copiar imagen PNG al portapapeles"
+          style={{
+            minHeight: "52px",
+            padding: "0 1.25rem",
+            backgroundColor: "#FFFFFF",
+            border: "1.5px solid #E2E8F0",
+            borderRadius: "12px",
+            color: "#0F172A",
+            fontFamily: "inherit",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            cursor: !isValidUrl ? "not-allowed" : "pointer",
+            opacity: !isValidUrl ? 0.45 : 1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            transition: "all 150ms ease",
+            flexShrink: 0,
+          }}
+          aria-label={t?.copyButton || "Copiar"}
         >
           <svg
-            width="17"
-            height="17"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -133,7 +170,7 @@ export const QRControls = ({
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
-          Copiar
+          {t?.copyButton || "Copiar"}
         </button>
 
         <button
@@ -141,10 +178,11 @@ export const QRControls = ({
           className={styles.downloadButton}
           onClick={onDownload}
           disabled={!isValidUrl || isDownloading}
+          style={{ flex: 1, margin: 0 }}
         >
           {isDownloading
             ? t?.downloading || "Generando descarga..."
-            : `${t?.downloadButton || "Descargar QR"} (${resolution}x${resolution} ${format.toUpperCase()})`}
+            : `${t?.downloadButton || "Descargar QR"} (${resolution}×${resolution} ${format.toUpperCase()})`}
         </button>
       </div>
     </div>

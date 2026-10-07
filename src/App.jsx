@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState } from "react";
 import { useLanguage } from "./context/LanguageContext";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { Header } from "./components/layout/Header";
@@ -12,7 +12,7 @@ import { QRControls } from "./components/qr/QRControls/QRControls";
 import { QRHistory } from "./components/qr/QRHistory/QRHistory";
 import { DownloadModal } from "./components/common/DownloadModal/DownloadModal";
 import { Toast } from "./components/common/Toast/Toast";
-import { exportQRCode } from "./services/qrExportService";
+import { exportQRCode, copyQRToClipboard } from "./services/qrExportService";
 import "./App.css";
 
 export default function App() {
@@ -40,37 +40,52 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  // Almacenamiento en memoria del SVG renderizado
-  const qrSvgMarkupRef = useRef("");
-
-  const handleQRReady = useCallback((svgString) => {
-    qrSvgMarkupRef.current = svgString || "";
-  }, []);
-
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setShowToast(true);
   };
 
+  // 1. Acción: Copiar al portapapeles
+  const handleCopy = async () => {
+    if (!url || !url.trim()) return;
+
+    try {
+      await copyQRToClipboard({
+        value: url.trim(),
+        size: Number(resolution),
+        transparentBg: format === "jpg" ? false : isTransparent,
+        color,
+      });
+      triggerToast(t?.copiedToast || "¡Código QR copiado al portapapeles!");
+    } catch (err) {
+      console.error(err);
+      triggerToast("No se pudo copiar la imagen al portapapeles.");
+    }
+  };
+
+  // 2. Acción: Descargar desde el Generador principal
   const handleDownload = async () => {
-    const svgMarkup = qrSvgMarkupRef.current;
-    if (!svgMarkup) return;
+    if (!url || !url.trim()) return;
 
     try {
       setIsDownloading(true);
       await exportQRCode({
-        svgMarkup,
+        value: url.trim(),
         size: Number(resolution),
         format,
         transparentBg: format === "jpg" ? false : isTransparent,
+        color,
         filename: "mio-creatives-qr",
       });
 
       // Guardar automáticamente en el historial local
       const newItem = {
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        value: url,
-        name: url.replace(/^https?:\/\//i, "").slice(0, 30),
+        value: url.trim(),
+        name: url
+          .trim()
+          .replace(/^https?:\/\//i, "")
+          .slice(0, 30),
         color,
         format,
         size: Number(resolution),
@@ -79,7 +94,7 @@ export default function App() {
       };
 
       setHistory((prev) =>
-        [newItem, ...prev.filter((i) => i.value !== url)].slice(0, 20),
+        [newItem, ...prev.filter((i) => i.value !== url.trim())].slice(0, 20),
       );
       triggerToast(t?.downloading || "¡Descarga iniciada con éxito!");
     } catch (err) {
@@ -90,7 +105,37 @@ export default function App() {
     }
   };
 
-  // Acciones sobre el Historial
+  // 3. Acción: Descargar desde el Modal del Historial
+  const handleConfirmModalDownload = async ({
+    format: modalFormat,
+    size: modalSize,
+    transparentBg: modalTransparent,
+  }) => {
+    if (!selectedHistoryItem) return;
+
+    try {
+      setIsDownloading(true);
+
+      await exportQRCode({
+        value: selectedHistoryItem.value,
+        size: Number(modalSize),
+        format: modalFormat,
+        transparentBg: modalFormat === "jpg" ? false : modalTransparent,
+        color: selectedHistoryItem.color || "#000000",
+        filename: selectedHistoryItem.name || "mio-creatives-qr",
+      });
+
+      setIsModalOpen(false);
+      triggerToast("¡Descarga completada con éxito!");
+    } catch (err) {
+      console.error("Error al descargar desde el historial:", err);
+      triggerToast("Error al descargar el archivo.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Métodos de gestión del Historial
   const handleSelectFromHistory = (item) => {
     setUrl(item.value);
     if (item.color) setColor(item.color);
@@ -118,28 +163,6 @@ export default function App() {
   const handleOpenDownloadModal = (item) => {
     setSelectedHistoryItem(item);
     setIsModalOpen(true);
-  };
-
-  const handleConfirmModalDownload = async ({
-    format: modalFormat,
-    size: modalSize,
-    transparentBg: modalTransparent,
-  }) => {
-    if (!selectedHistoryItem) return;
-
-    try {
-      await exportQRCode({
-        svgMarkup: qrSvgMarkupRef.current || "",
-        size: Number(modalSize),
-        format: modalFormat,
-        transparentBg: modalTransparent,
-        filename: selectedHistoryItem.name || "mio-creatives-qr",
-      });
-      triggerToast(t?.downloading || "¡Descarga iniciada con éxito!");
-    } catch (err) {
-      console.error(err);
-      triggerToast("Error al descargar el archivo.");
-    }
   };
 
   return (
@@ -173,6 +196,7 @@ export default function App() {
           historyCount={history.length}
         />
 
+        {/* 1. Vista Generador */}
         {activeTab === "generator" && (
           <div className="generatorCard">
             <section style={{ display: "flex", justifyContent: "center" }}>
@@ -181,7 +205,6 @@ export default function App() {
                 color={color}
                 onColorChange={setColor}
                 isTransparent={format === "jpg" ? false : isTransparent}
-                onReady={handleQRReady}
                 onCopySuccess={() =>
                   triggerToast(
                     t?.copiedToast || "¡Código QR copiado al portapapeles!",
@@ -201,6 +224,7 @@ export default function App() {
                 isTransparent={isTransparent}
                 onTransparentChange={setIsTransparent}
                 onDownload={handleDownload}
+                onCopy={handleCopy}
                 isDownloading={isDownloading}
                 isValidUrl={Boolean(url && url.trim().length > 0)}
               />
@@ -208,6 +232,7 @@ export default function App() {
           </div>
         )}
 
+        {/* 2. Vista Historial */}
         {activeTab === "history" && (
           <QRHistory
             items={history}
@@ -220,12 +245,13 @@ export default function App() {
           />
         )}
 
+        {/* 3. Vista Preguntas Frecuentes */}
         {activeTab === "faq" && <FAQView />}
       </main>
 
       <Footer />
 
-      {/* Modal accesible de re-descarga */}
+      {/* Modal accesible de descarga */}
       <DownloadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

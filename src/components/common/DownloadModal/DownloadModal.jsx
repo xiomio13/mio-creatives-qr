@@ -1,13 +1,13 @@
 // src/components/common/DownloadModal/DownloadModal.jsx
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import styles from './DownloadModal.module.css';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import styles from "./DownloadModal.module.css";
 
 export const DownloadModal = ({
   isOpen,
   onClose,
   onConfirm,
-  initialFormat = 'png',
+  initialFormat = "png",
   initialSize = 500,
   initialTransparent = false,
 }) => {
@@ -15,9 +15,17 @@ export const DownloadModal = ({
   const [size, setSize] = useState(initialSize);
   const [isTransparent, setIsTransparent] = useState(initialTransparent);
 
+  useEffect(() => {
+    if (isOpen) {
+      setFormat(initialFormat);
+      setSize(initialSize);
+      setIsTransparent(initialTransparent);
+    }
+  }, [isOpen, initialFormat, initialSize, initialTransparent]);
+
   if (!isOpen) return null;
 
-  const isJpg = format.toLowerCase() === 'jpg';
+  const isJpg = format.toLowerCase() === "jpg";
 
   const handleDownload = () => {
     onConfirm({
@@ -25,11 +33,15 @@ export const DownloadModal = ({
       size: Number(size),
       transparentBg: isJpg ? false : isTransparent,
     });
-    onClose();
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
+    <div
+      className={styles.overlay}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h3 className={styles.title}>Descargar Código QR</h3>
@@ -43,11 +55,15 @@ export const DownloadModal = ({
           </button>
         </div>
 
-        <p className={styles.subtitle}>Selecciona el formato y la resolución deseada</p>
+        <p className={styles.subtitle}>
+          Selecciona el formato y la resolución deseada
+        </p>
 
         <div className={styles.fieldGroup}>
           <div className={styles.field}>
-            <label htmlFor="modal-format" className={styles.label}>Formato</label>
+            <label htmlFor="modal-format" className={styles.label}>
+              Formato
+            </label>
             <select
               id="modal-format"
               className={styles.select}
@@ -61,7 +77,9 @@ export const DownloadModal = ({
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="modal-size" className={styles.label}>Tamaño</label>
+            <label htmlFor="modal-size" className={styles.label}>
+              Tamaño
+            </label>
             <select
               id="modal-size"
               className={styles.select}
@@ -77,20 +95,45 @@ export const DownloadModal = ({
           </div>
         </div>
 
-        {/* Checkbox condicional: solo visible si el formato es PNG o SVG */}
-        {!isJpg && (
-          <div className={styles.checkboxContainer}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                className={styles.checkbox}
-                checked={isTransparent}
-                onChange={(e) => setIsTransparent(e.target.checked)}
-              />
-              <span>Fondo transparente</span>
-            </label>
-          </div>
-        )}
+        {/* Checkbox de Fondo Transparente */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              cursor: isJpg ? "not-allowed" : "pointer",
+              fontFamily: 'var(--font-body, "Inter", sans-serif)',
+              fontSize: "0.875rem",
+              color: isJpg ? "#94A3B8" : "#0F172A",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={isTransparent && !isJpg}
+              disabled={isJpg}
+              onChange={(e) => setIsTransparent(e.target.checked)}
+              style={{
+                width: "18px",
+                height: "18px",
+                accentColor: "#FF5500",
+                cursor: isJpg ? "not-allowed" : "pointer",
+              }}
+            />
+            <span>Fondo transparente</span>
+          </label>
+          {isJpg && (
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "#64748B",
+                margin: "0.35rem 0 0 0",
+              }}
+            >
+              * El formato JPG no admite transparencia.
+            </p>
+          )}
+        </div>
 
         <button
           type="button"
@@ -126,3 +169,5 @@ DownloadModal.propTypes = {
   initialSize: PropTypes.number,
   initialTransparent: PropTypes.bool,
 };
+
+export default DownloadModal;

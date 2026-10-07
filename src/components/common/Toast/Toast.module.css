@@ -1,9 +1,13 @@
 /* src/components/common/Toast/Toast.module.css */
-.toastWrapper {
+.toastContainer {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 150;
+  z-index: 9999;
+  animation: slideIn 200ms ease-out forwards;
+}
+
+.toastContent {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -11,19 +15,46 @@
   color: #FFFFFF;
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
   font-family: var(--font-body, "Inter", sans-serif);
   font-size: 0.9rem;
   font-weight: 500;
-  animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  max-width: calc(100vw - 4rem);
 }
 
-@keyframes slideUp {
+.toastIcon {
+  color: #FF5500;
+  font-weight: bold;
+}
+
+.toastText {
+  color: #F8FAFC;
+}
+
+.toastCloseBtn {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0 0 0.5rem;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 4px;
+}
+
+.toastCloseBtn:hover {
+  color: #FFFFFF;
+}
+
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -31,49 +62,13 @@
   }
 }
 
-.icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #FF5500;
-  flex-shrink: 0;
-}
-
-.message {
-  line-height: 1.4;
-}
-
-.closeButton {
-  background: none;
-  border: none;
-  color: #94A3B8;
-  cursor: pointer;
-  padding: 0.25rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  margin-left: 0.5rem;
-  font-size: 1.2rem;
-  min-width: 32px;
-  min-height: 32px;
-  transition: color var(--transition-fast, 150ms ease);
-}
-
-.closeButton:hover {
-  color: #FFFFFF;
-}
-
-.closeButton:focus-visible {
-  outline: 2px solid #FF5500;
-  outline-offset: 2px;
-}
-
 @media (max-width: 640px) {
-  .toastWrapper {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    max-width: none;
+  .toastContainer {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    left: 1.25rem;
+  }
+  .toastContent {
+    justify-content: space-between;
   }
 }

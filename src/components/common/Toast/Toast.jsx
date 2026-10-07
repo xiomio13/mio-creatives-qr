@@ -3,54 +3,48 @@ import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import styles from "./Toast.module.css";
 
-export const Toast = ({ message, onClose, duration = 3000 }) => {
+export const Toast = ({ message, isVisible, onClose, duration = 3500 }) => {
   useEffect(() => {
-    if (!message) return;
+    if (!isVisible) return;
 
+    // Desaparece automáticamente después de 3.5 segundos
     const timer = setTimeout(() => {
       onClose();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [message, duration, onClose]);
+  }, [isVisible, duration, onClose]);
 
-  if (!message) return null;
+  if (!isVisible || !message) return null;
 
   return (
-    <div className={styles.toastWrapper} role="status" aria-live="polite">
-      <span className={styles.icon} aria-hidden="true">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className={styles.toastContainer} role="status" aria-live="polite">
+      <div className={styles.toastContent}>
+        {/* Icono de Check */}
+        <span className={styles.toastIcon} aria-hidden="true">
+          ✓
+        </span>
+
+        {/* Texto del aviso */}
+        <span className={styles.toastText}>{message}</span>
+
+        {/* Botón interactivo para cerrar cuando el usuario lo desee */}
+        <button
+          type="button"
+          className={styles.toastCloseBtn}
+          onClick={onClose}
+          aria-label="Cerrar notificación"
         >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </span>
-
-      <span className={styles.message}>{message}</span>
-
-      <button
-        type="button"
-        className={styles.closeButton}
-        onClick={onClose}
-        aria-label="Cerrar notificación"
-      >
-        &times;
-      </button>
+          &times;
+        </button>
+      </div>
     </div>
   );
 };
 
 Toast.propTypes = {
   message: PropTypes.string,
+  isVisible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   duration: PropTypes.number,
 };
-
-export default Toast;
