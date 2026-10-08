@@ -57,8 +57,12 @@
 
 @media (max-width: 768px) {
   .generatorCard {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-    gap: 2rem;
+    grid-template-columns: 1fr !important;
+    padding: 1.25rem !important;
+    gap: 1.75rem !important;
+    border-radius: 16px !important;
+    margin: 1rem auto 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }

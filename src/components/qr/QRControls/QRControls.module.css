@@ -1,22 +1,17 @@
 /* src/components/qr/QRControls/QRControls.module.css */
-
 .controlsContainer {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .controlGroup {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.urlLabelRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  width: 100%;
 }
 
 .label {
@@ -24,36 +19,28 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text-primary, #0F172A);
+  user-select: none;
 }
 
-/* Badge semántico reactivo */
-.typeBadge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #7C3AED;
-  background-color: #F5F3FF;
-  border: 1px solid #DDD6FE;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  display: inline-flex;
+.urlLabelRow {
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: space-between;
 }
 
-/* Campo de entrada de texto principal */
 .textInput {
   width: 100%;
-  height: 48px;
-  padding: 0 1rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--color-border, #E2E8F0);
+  border-radius: 12px;
   font-family: var(--font-body, "Inter", sans-serif);
   font-size: 0.95rem;
-  border: 1.5px solid var(--color-border, #E2E8F0);
-  border-radius: 10px;
-  background-color: #FFFFFF;
   color: var(--color-text-primary, #0F172A);
   outline: none;
   box-sizing: border-box;
-  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .textInput:focus {
@@ -65,93 +52,80 @@
   color: #94A3B8;
 }
 
-/* Sugerencia contextual en ámbar */
-.semanticHint {
-  font-size: 0.775rem;
-  color: #D97706;
-  background-color: #FFFBEB;
-  border: 1px solid #FDE68A;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  line-height: 1.4;
-  margin-top: 0.25rem;
-}
-
-/* Controles segmentados (Resolución y Formato) */
+/* Grupos segmentados de resolución y formato */
 .segmentedControl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  display: flex;
   background-color: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  padding: 0.25rem;
-  gap: 0.25rem;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 12px;
+  padding: 0.35rem;
+  gap: 0.35rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .segmentedButton {
+  flex: 1;
+  min-height: 42px;
   background: transparent;
   border: none;
   border-radius: 8px;
-  padding: 0.6rem 0.5rem;
   font-family: var(--font-body, "Inter", sans-serif);
   font-size: 0.85rem;
   font-weight: 500;
   color: #64748B;
   cursor: pointer;
-  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast, 150ms ease);
+  transition: background-color 150ms ease, color 150ms ease;
+  user-select: none;
 }
 
 .segmentedButton:hover:not(.active) {
-  color: #0F172A;
   background-color: #F1F5F9;
+  color: #0F172A;
 }
 
-.segmentedButton.active {
+.active {
   background-color: #FF5500;
   color: #FFFFFF;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(255, 85, 0, 0.25);
 }
 
-.segmentedButton:focus-visible {
-  outline: 2px solid #FF5500;
-  outline-offset: 2px;
-}
-
-/* Checkbox de fondo transparente */
+/* Casilla de verificación de fondo transparente */
 .checkboxLabel {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  background-color: #FAFAFC;
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: 12px;
   font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--color-text-primary, #0F172A);
   cursor: pointer;
-  user-select: none;
+  box-sizing: border-box;
 }
 
 .checkboxInput {
-  width: 18px;
-  height: 18px;
+  width: 1.25rem;
+  height: 1.25rem;
   accent-color: #FF5500;
   cursor: pointer;
 }
 
 .warningNote {
-  font-size: 0.775rem;
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 0.8rem;
   color: #64748B;
-  margin: 0.35rem 0 0 0;
+  margin: 0.4rem 0 0 0;
   line-height: 1.4;
 }
 
-/* Botón principal de descarga con degradado de marca */
 .downloadButton {
   width: 100%;
   min-height: 52px;
@@ -160,133 +134,37 @@
   border: none;
   border-radius: 12px;
   font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.25);
-  transition: opacity var(--transition-fast, 150ms ease), transform 150ms ease;
-  margin-top: 0.5rem;
+  transition: opacity 150ms ease;
+  box-sizing: border-box;
 }
 
 .downloadButton:hover:not(:disabled) {
-  opacity: 0.94;
-  transform: translateY(-1px);
+  opacity: 0.92;
 }
 
 .downloadButton:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  transform: none;
   box-shadow: none;
 }
 
-.downloadButton:focus-visible {
-  outline: 2px solid #7C3AED;
-  outline-offset: 2px;
-}
-
-/* Fila contenedora: alinea ambos botones al centro vertical y horizontal */
-.actionButtonsRow {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  margin-top: 0.5rem;
-  box-sizing: border-box;
-}
-
-/* Botón Copiar: altura fija exacta de 48px */
-.copyButton {
-  height: 48px;
-  min-height: 48px;
-  max-height: 48px;
-  padding: 0 1.25rem;
-  background-color: #FFFFFF;
-  color: #0F172A;
-  border: 1.5px solid var(--color-border, #E2E8F0);
-  border-radius: 12px;
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  line-height: 1;
-  box-sizing: border-box;
-  transition: all var(--transition-fast, 150ms ease);
-}
-
-.copyButton:hover:not(:disabled) {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
-}
-
-.copyButton:focus-visible {
-  outline: 2px solid #FF5500;
-  outline-offset: 2px;
-}
-
-.copyButton:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  border-color: #E2E8F0;
-}
-
-/* Botón Descargar: altura fija exacta de 48px y ocupa el resto del ancho */
-.downloadButton {
-  flex: 1;
-  height: 48px;
-  min-height: 48px;
-  max-height: 48px;
-  padding: 0 1.25rem;
-  background: linear-gradient(135deg, #FF5500 0%, #7C3AED 100%);
-  color: #FFFFFF !important;
-  border: none;
-  border-radius: 12px;
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  line-height: 1;
-  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.25);
-  box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0; /* Anula márgenes externos que causen desalineación */
-  transition: transform var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease), opacity var(--transition-fast, 150ms ease);
-}
-
-.downloadButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.3);
-}
-
-.downloadButton:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Ajuste móvil */
+/* Adaptación móvil natural */
 @media (max-width: 640px) {
-  .actionButtonsRow {
-    flex-direction: column;
+  .segmentedControl {
+    flex-wrap: wrap;
   }
-  .copyButton,
-  .downloadButton {
-    width: 100%;
+
+  .segmentedButton {
+    flex: 1 1 calc(33.33% - 0.35rem);
+    min-height: 38px;
+    font-size: 0.8rem;
   }
 }

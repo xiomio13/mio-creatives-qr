@@ -57,3 +57,29 @@
   height: 220px;
   display: block;
 }
+
+@media (max-width: 640px) {
+  .previewContainer,
+  .qrCard,
+  .card {
+    width: 100% !important;
+    max-width: 280px !important; 
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .previewBox,
+  .qrBox {
+    width: 100% !important;
+    max-width: 260px !important;
+    min-height: 240px !important;
+    box-sizing: border-box !important;
+    padding: 1rem !important;
+  }
+
+  .emptyText {
+    font-size: 0.85rem !important;
+    padding: 0 0.5rem !important;
+    line-height: 1.4 !important;
+  }
+}

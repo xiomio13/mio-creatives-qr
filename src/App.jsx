@@ -169,15 +169,20 @@ export default function App() {
     <div
       style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
     >
-      <header
+      {/* Contenedor unificado para que el selector y la tarjeta compartan el mismo margen derecho exacto */}
+      <div
         style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          width: "100%",
+          padding: "1.5rem 0rem",
           display: "flex",
           justifyContent: "flex-end",
-          padding: "1rem 2rem",
+          boxSizing: "border-box",
         }}
       >
         <LanguageSelector />
-      </header>
+      </div>
 
       <main
         style={{
@@ -186,6 +191,7 @@ export default function App() {
           margin: "0 auto",
           width: "100%",
           padding: "0 1.5rem 3rem",
+          boxSizing: "border-box",
         }}
       >
         <Header />
